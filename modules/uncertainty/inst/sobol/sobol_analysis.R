@@ -5,12 +5,26 @@
 
 settings <- PEcAn.settings::read.settings("/projectnb/dietzelab/bthomas/pecan_runs/sipnet_test/pecan_updated.xml")
 ensemble_size = settings$ensemble$size
-if (PEcAn.settings::is.MultiSettings(settings)){
-      sobol_obj <- PEcAn.uncertainty::generate_joint_ensemble_design(settings = settings[1], ensemble_size = ensemble_size, sobol = TRUE) 
-}else{
-      sobol_obj <- PEcAn.uncertainty::generate_joint_ensemble_design(settings = settings, ensemble_size = ensemble_size, sobol = TRUE) }
+base_settings <- if (PEcAn.settings::is.MultiSettings(settings)) settings[1] else settings
+samples <- PEcAn.uncertainty::get.parameter.samples(settings = base_settings, ensemble.size = ensemble_size)
+sobol_obj <- PEcAn.uncertainty::generate_joint_ensemble_design(
+      run = base_settings$run,
+      ensemble = base_settings$ensemble,
+      ensemble_size = ensemble_size,
+      samples = samples,
+      sobol = TRUE
+)
+
+dbCon <- NULL
+if (!is.null(settings$database$bety)) {
+  maybe_con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
+  if (!inherits(maybe_con, "try-error")) {
+    dbCon <- maybe_con
+    on.exit(try(PEcAn.DB::db.close(dbCon), silent = TRUE), add = TRUE)
+  }
+}
   
-PEcAn.workflow::runModule.run.write.configs(settings,input_design = sobol_obj$X )
+PEcAn.workflow::runModule.run.write.configs(settings, input_design = sobol_obj$X, dbCon = dbCon)
  
   
 PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = stop_on_error)
@@ -23,5 +37,4 @@ sobol_results <- PEcAn.uncertainty::compute_sobol_indices(outdir = settings$outd
   
 
  
-
 

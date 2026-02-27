@@ -15,6 +15,9 @@
 #' @param posterior.files Filenames for posteriors for drawing samples for ensemble and sensitivity
 #'    analysis (e.g. post.distns.Rdata, or prior.distns.Rdata)
 #' @param overwrite logical: Replace output files that already exist?
+#' @param samples Optional structured samples object. Preferred input for modular
+#'   workflows. Must include `trait.samples`, `sa.samples`, `ensemble.samples`,
+#'   `runs.samples`, and `env.samples`.
 #'
 #' @details The default value for \code{posterior.files} is NA, in which case the
 #'    most recent posterior or prior (in that order) for the workflow is used.
@@ -29,7 +32,8 @@
 
 run.write.configs <- function(settings, ensemble.size, input_design, write = TRUE,
                               posterior.files = rep(NA, length(settings$pfts)),
-                              overwrite = TRUE) {
+                              overwrite = TRUE,
+                              samples = NULL) {
 
   # Validate that input_design matches ensemble.size for ensemble runs
   # Note: for SA, ensemble.size is not meaningful; SA design size is determined by
@@ -124,36 +128,58 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
   scipen <- getOption("scipen")
   options(scipen = 12)
 
-  samples.file <- file.path(settings$outdir, "samples.Rdata")
-  if (file.exists(samples.file)) {
-    existing_data <- new.env()
-    load(samples.file, envir = existing_data) ## loads ensemble.samples, trait.samples, sa.samples, runs.samples, env.samples
-    trait.samples <- existing_data$trait.samples
-    sa.samples <- existing_data$sa.samples
-    
-    # build ensemble.samples only for ensemble runs
-    # SA runs use sa.samples directly (quantile-based), not ensemble.samples
-    if ("ensemble" %in% names(settings) && 
-        !is.null(input_design) && 
-        "param" %in% colnames(input_design)) {
+  if (!is.null(samples)) {
+    .validate_runwrite_samples(samples)
+    trait.samples <- samples$trait.samples
+    sa.samples <- samples$sa.samples
+    ensemble.samples <- samples$ensemble.samples
+
+    if ("ensemble" %in% names(settings) &&
+        !is.null(input_design) &&
+        "param" %in% colnames(input_design) &&
+        !is.null(trait.samples)) {
       trait_sample_indices <- input_design[["param"]]
       ensemble.samples <- list()
       for (pft in names(trait.samples)) {
         pft_traits <- trait.samples[[pft]]
         ensemble.samples[[pft]] <- as.data.frame(
-          lapply(
-            names(pft_traits),
-            function(trait) pft_traits[[trait]][trait_sample_indices]
-          )
+          lapply(names(pft_traits), function(trait) pft_traits[[trait]][trait_sample_indices])
         )
         names(ensemble.samples[[pft]]) <- names(pft_traits)
       }
-    } else {
-      # use pre-generated samples
-      ensemble.samples <- existing_data$ensemble.samples
     }
   } else {
-    PEcAn.logger::logger.error(samples.file, "not found, this file is required by the run.write.configs function")
+    .Deprecated(msg = paste(
+      "Calling run.write.configs() without `samples` is deprecated.",
+      "Pass explicit samples from get.parameter.samples()."
+    ))
+    samples.file <- file.path(settings$outdir, "samples.Rdata")
+    if (file.exists(samples.file)) {
+      existing_data <- new.env()
+      load(samples.file, envir = existing_data)
+      trait.samples <- existing_data$trait.samples
+      sa.samples <- existing_data$sa.samples
+      ensemble.samples <- existing_data$ensemble.samples
+
+      if ("ensemble" %in% names(settings) &&
+          !is.null(input_design) &&
+          "param" %in% colnames(input_design)) {
+        trait_sample_indices <- input_design[["param"]]
+        ensemble.samples <- list()
+        for (pft in names(trait.samples)) {
+          pft_traits <- trait.samples[[pft]]
+          ensemble.samples[[pft]] <- as.data.frame(
+            lapply(names(pft_traits), function(trait) pft_traits[[trait]][trait_sample_indices])
+          )
+          names(ensemble.samples[[pft]]) <- names(pft_traits)
+        }
+      }
+    } else {
+      PEcAn.logger::logger.error(
+        samples.file,
+        "not found and `samples` was not provided to run.write.configs"
+      )
+    }
   }
 
   ## remove previous runs.txt
@@ -269,4 +295,13 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
 
   options(scipen = scipen)
   return(invisible(settings))
+}
+
+.validate_runwrite_samples <- function(samples) {
+  required <- c("trait.samples", "sa.samples", "ensemble.samples", "runs.samples", "env.samples")
+  missing <- setdiff(required, names(samples))
+  if (length(missing) > 0) {
+    stop("samples is missing required entries: ", paste(missing, collapse = ", "))
+  }
+  invisible(TRUE)
 }

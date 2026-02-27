@@ -3,8 +3,9 @@
 
 test_that("generate_OAT_SA_design returns correct structure and run count", {
   settings <- make_test_settings()
+  samples <- make_test_samples()
   
-  result <- generate_OAT_SA_design(settings, sa_samples = mock_sa_samples)
+  result <- generate_OAT_SA_design(ensemble = settings$ensemble, samples = samples)
   
   # 1 median + 3 traits * 2 non-median quantiles = 7
   expect_equal(nrow(result$X), 7)
@@ -14,7 +15,8 @@ test_that("generate_OAT_SA_design returns correct structure and run count", {
 
   test_that("generate_OAT_SA_design keeps param sequential and non-param constant at 1", {
   settings <- make_test_settings()
-  result <- generate_OAT_SA_design(settings, sa_samples = mock_sa_samples)
+  samples <- make_test_samples()
+  result <- generate_OAT_SA_design(ensemble = settings$ensemble, samples = samples)
   
   expect_equal(result$X$param, seq_len(nrow(result$X)))
 
@@ -75,7 +77,14 @@ test_that("OAT design integrates with write.sa.configs for SA postprocessing", {
     )
   )
   
-  design_result <- generate_OAT_SA_design(settings, sa_samples = sa_samples)
+  samples <- list(
+    trait.samples = list(),
+    sa.samples = sa_samples,
+    ensemble.samples = list(),
+    runs.samples = list(),
+    env.samples = list()
+  )
+  design_result <- generate_OAT_SA_design(ensemble = settings$ensemble, samples = samples)
   input_design <- design_result$X
   
   result <- PEcAn.uncertainty::write.sa.configs(

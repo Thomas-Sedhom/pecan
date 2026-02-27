@@ -51,7 +51,15 @@ nens <- settings$ensemble
 #changed input to be only one met ensemble member
 #basically the same as pecan.CONFIGS.xml
 settings <- read.settings('pecan.DEFAULT.xml')
-settings <- PEcAn.workflow::runModule.run.write.configs(settings)
+dbCon <- NULL
+if (!is.null(settings$database$bety)) {
+  maybe_con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
+  if (!inherits(maybe_con, "try-error")) {
+    dbCon <- maybe_con
+  }
+}
+settings <- PEcAn.workflow::runModule.run.write.configs(settings, dbCon = dbCon)
+if (!is.null(dbCon)) PEcAn.DB::db.close(dbCon)
 
 # Taking average of samples to have fixed params across nens
 load('samples.Rdata')
@@ -115,7 +123,15 @@ file.rename('SDA','SDA_default_ic')
 
 #running with sampled params
 settings <- read.settings('pecan.DEFAULT.xml')
-settings <- PEcAn.workflow::runModule.run.write.configs(settings)
+dbCon <- NULL
+if (!is.null(settings$database$bety)) {
+  maybe_con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
+  if (!inherits(maybe_con, "try-error")) {
+    dbCon <- maybe_con
+  }
+}
+settings <- PEcAn.workflow::runModule.run.write.configs(settings, dbCon = dbCon)
+if (!is.null(dbCon)) PEcAn.DB::db.close(dbCon)
 PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = FALSE)
 
 file.rename('out','out_param')
@@ -162,7 +178,15 @@ file.rename('run','run_param_ic')
 
 #running with sampled params
 settings <- read.settings('pecan.SAMP.MET.xml')
-settings <- PEcAn.workflow::runModule.run.write.configs(settings)
+dbCon <- NULL
+if (!is.null(settings$database$bety)) {
+  maybe_con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
+  if (!inherits(maybe_con, "try-error")) {
+    dbCon <- maybe_con
+  }
+}
+settings <- PEcAn.workflow::runModule.run.write.configs(settings, dbCon = dbCon)
+if (!is.null(dbCon)) PEcAn.DB::db.close(dbCon)
 PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = FALSE)
 
 file.rename('out','out_met')

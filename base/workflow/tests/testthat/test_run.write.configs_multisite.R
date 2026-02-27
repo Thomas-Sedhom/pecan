@@ -12,23 +12,32 @@ make_test_env <- function() {
   dir.create(rundir, recursive = TRUE, showWarnings = FALSE)
   dir.create(modeloutdir, recursive = TRUE, showWarnings = FALSE)
 
-  # create minimal samples.Rdata
   trait.samples <- list(pftA = list(Vcmax = c(40, 45)))
   sa.samples <- list(
     pftA = matrix(c(42, 48), nrow = 2, ncol = 1,
                   dimnames = list(c("50", "95"), "Vcmax"))
   )
+  ensemble.samples <- list(
+    pftA = data.frame(Vcmax = c(40, 45))
+  )
   runs.samples <- list()
+  env.samples <- list()
   pft.names <- names(trait.samples)
   trait.names <- lapply(trait.samples, names)
-  save(trait.samples, sa.samples, runs.samples, pft.names, trait.names,
-       file = file.path(workflow_root, "samples.Rdata"))
+  samples <- list(
+    trait.samples = trait.samples,
+    sa.samples = sa.samples,
+    ensemble.samples = ensemble.samples,
+    runs.samples = runs.samples,
+    env.samples = env.samples
+  )
 
   list(
     workflow_root = workflow_root,
     rundir = rundir,
     modeloutdir = modeloutdir,
-    manifest_file = file.path(workflow_root, "runs_manifest.csv")
+    manifest_file = file.path(workflow_root, "runs_manifest.csv"),
+    samples = samples
   )
 }
 
@@ -70,7 +79,8 @@ test_that("run.write.configs writes manifest with expected structure", {
     ensemble.size = 1,
     input_design = input_design,
     write = FALSE,
-    overwrite = TRUE
+    overwrite = TRUE,
+    samples = env$samples
   )
 
   expect_true(file.exists(env$manifest_file))
@@ -105,7 +115,8 @@ test_that("run.write.configs appends to manifest when overwrite = FALSE", {
     ensemble.size = 1,
     input_design = input_design,
     write = FALSE,
-    overwrite = TRUE
+    overwrite = TRUE,
+    samples = env$samples
   )
 
   first_manifest <- utils::read.csv(env$manifest_file, stringsAsFactors = FALSE)
@@ -118,7 +129,8 @@ test_that("run.write.configs appends to manifest when overwrite = FALSE", {
     ensemble.size = 1,
     input_design = input_design,
     write = FALSE,
-    overwrite = FALSE
+    overwrite = FALSE,
+    samples = env$samples
   )
 
   merged_manifest <- utils::read.csv(env$manifest_file, stringsAsFactors = FALSE)

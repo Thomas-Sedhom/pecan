@@ -3,16 +3,17 @@
 
 test_that("generate_joint_ensemble_design returns correct structure", {
  settings <- make_test_settings()
- settings$run <- list(inputs = list(met = list(path = c("met1.nc", "met2.nc"))))
- 
+ samples <- make_test_samples()
+
  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
    function(...) list(ids = sample(1:2, 5, replace = TRUE)))
- mockery::stub(generate_joint_ensemble_design, "get.parameter.samples",
-   function(...) NULL)
- mockery::stub(generate_joint_ensemble_design, "file.exists",
-   function(...) TRUE)
- 
- result <- generate_joint_ensemble_design(settings, ensemble_size = 5)
+
+ result <- generate_joint_ensemble_design(
+   run = settings$run,
+   ensemble = settings$ensemble,
+   ensemble_size = 5,
+   samples = samples
+ )
  
  expect_true("X" %in% names(result))
  expect_equal(nrow(result$X), 5)
@@ -21,20 +22,25 @@ test_that("generate_joint_ensemble_design returns correct structure", {
 
 test_that("ensemble design allows variation in non-param columns unlike OAT", {
  settings <- make_test_settings()
+ samples <- make_test_samples()
  
  # get OAT design for comparison (uses shared fixture)
- sa_result <- generate_OAT_SA_design(settings, sa_samples = mock_sa_samples)
+ sa_result <- generate_OAT_SA_design(
+   ensemble = settings$ensemble,
+   samples = samples
+ )
  
  # test that ensemble design STRUCTURE allows variation in non-param columns
  settings$run <- list(inputs = list(met = list(path = c("m1.nc", "m2.nc", "m3.nc"))))
  mockery::stub(generate_joint_ensemble_design, "input.ens.gen",
    function(...) list(ids = c(1, 2, 3, 1, 2))) # varied indices
- mockery::stub(generate_joint_ensemble_design, "get.parameter.samples",
-   function(...) NULL)
- mockery::stub(generate_joint_ensemble_design, "file.exists",
-   function(...) TRUE)
  
- ens_result <- generate_joint_ensemble_design(settings, ensemble_size = 5)
+ ens_result <- generate_joint_ensemble_design(
+   run = settings$run,
+   ensemble = settings$ensemble,
+   ensemble_size = 5,
+   samples = samples
+ )
  
  # key structural difference: SA constant, ensemble varies
  expect_equal(length(unique(sa_result$X$met)), 1)

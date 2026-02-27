@@ -19,7 +19,15 @@ library("PEcAn.all")
 settings = readRDS("/projectnb/dietzelab/dietze/hf_landscape_SDA/test01/pecan.RDS")
 settings <- PEcAn.settings::prepare.settings(settings, force = FALSE)
 
-settings <- PEcAn.workflow::runModule.run.write.configs(settings)
+dbCon <- NULL
+if (!is.null(settings$database$bety)) {
+  maybe_con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
+  if (!inherits(maybe_con, "try-error")) {
+    dbCon <- maybe_con
+  }
+}
+settings <- PEcAn.workflow::runModule.run.write.configs(settings, dbCon = dbCon)
+if (!is.null(dbCon)) PEcAn.DB::db.close(dbCon)
 PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = FALSE)
 #runModule.get.results(settings)
 #runModule.run.ensemble.analysis(settings, TRUE)
@@ -150,4 +158,3 @@ saveHTML(gen_anim(),            # run the main function
 
 
 ```
-

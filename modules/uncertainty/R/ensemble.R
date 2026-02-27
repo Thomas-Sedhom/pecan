@@ -566,7 +566,7 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
 
 #' Function for generating samples based on sampling method, parent or etc
 #'
-#' @param settings list of PEcAn settings
+#' @param run list containing run inputs (typically `settings$run`)
 #' @param input name of input to sample, e.g. "met", "veg", "pss"
 #' @param method Method for sampling - For now looping or sampling with replacement is implemented
 #' @param parent_ids This is basically the order of the paths that the parent is sampled.See Details.
@@ -581,14 +581,26 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
 #' \dontrun{
 #'   settings <- PEcAn.settings::read.settings("pecan.xml")
 #'   input.ens.gen(
-#'     settings, 
+#'     run = settings$run,
 #'     ensemble_size = 50,
 #'     input = "met",
 #'     method = "sampling"
 #'   )
 #' }
 #'
-input.ens.gen <- function(settings, ensemble_size, input, method = "sampling", parent_ids = NULL) {
+input.ens.gen <- function(run = NULL, ensemble_size, input, method = "sampling",
+                          parent_ids = NULL, settings = NULL) {
+
+  if (!is.null(settings)) {
+    .Deprecated(msg = paste(
+      "Passing `settings` to input.ens.gen() is deprecated.",
+      "Pass `run` explicitly."
+    ))
+    run <- run %||% settings$run
+  }
+  if (is.null(run)) {
+    stop("`run` is required.")
+  }
 
   samples <- list()
   samples$ids <- c()
@@ -597,7 +609,7 @@ input.ens.gen <- function(settings, ensemble_size, input, method = "sampling", p
   # parameter is exceptional it needs to be handled spearatly
   if (input == "parameters") return(NULL)
 
-  input_path <- settings$run$inputs[[tolower(input)]]$path
+  input_path <- run$inputs[[tolower(input)]]$path
   if (is.null(input_path)) {
     PEcAn.logger::logger.error(
       "No paths found for input", sQuote(input), "in settings$run$inputs"

@@ -63,6 +63,14 @@ status_file <- file.path(settings$outdir, "STATUS")
 
 # Write model specific configs
 PEcAn.utils::status.start("CONFIG")
-settings <- PEcAn.workflow::runModule.run.write.configs(settings)
+dbCon <- NULL
+if (!is.null(settings$database$bety)) {
+  maybe_con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
+  if (!inherits(maybe_con, "try-error")) {
+    dbCon <- maybe_con
+    on.exit(try(PEcAn.DB::db.close(dbCon), silent = TRUE), add = TRUE)
+  }
+}
+settings <- PEcAn.workflow::runModule.run.write.configs(settings, dbCon = dbCon)
 PEcAn.settings::write.settings(settings, outputfile = "pecan.CONFIGS.xml")
 PEcAn.utils::status.end()
