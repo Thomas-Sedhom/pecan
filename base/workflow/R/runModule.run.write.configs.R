@@ -79,7 +79,7 @@ runModule.run.write.configs <- function(settings,
 
   current_overwrite <- overwrite
   settings_final <- settings
-
+# ---------------- SENSITIVITY ANALYSIS CALL ----------------------
   if ("sensitivity.analysis" %in% names(settings) && !is.null(designs$sensitivity)) {
     PEcAn.logger::logger.info("Writing configs for Sensitivity Analysis...")
 
@@ -100,7 +100,7 @@ runModule.run.write.configs <- function(settings,
     settings_final$pfts <- settings_sa_out$pfts
     current_overwrite <- FALSE
   }
-
+# ------------------- ENSEMBLE CALL ----------------------
   if ("ensemble" %in% names(settings) && !is.null(designs$ensemble)) {
     PEcAn.logger::logger.info("Writing configs for Ensemble...")
 

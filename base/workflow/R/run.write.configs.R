@@ -134,6 +134,8 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     sa.samples <- samples$sa.samples
     ensemble.samples <- samples$ensemble.samples
 
+    # build ensemble.samples only for ensemble runs
+    # SA runs use sa.samples directly (quantile-based), not ensemble.samples
     if ("ensemble" %in% names(settings) &&
         !is.null(input_design) &&
         "param" %in% colnames(input_design) &&
