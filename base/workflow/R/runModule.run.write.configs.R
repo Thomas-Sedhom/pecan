@@ -1,5 +1,15 @@
 #' Generate model-specific run configuration files for one or more PEcAn runs
 #'
+#' This function serves as the orchestration layer between PEcAn workflows and
+#' the config-writing machinery. It generates appropriate input designs
+#' (ensemble and/or SA) if not provided. For MultiSettings, it generates designs once
+#' from the first site then shares across all sites for consistent sampling. Finally,
+#' it delegates to \code{\link{run.write.configs}} for actual config generation.
+#' The input design determines how parameter samples and input files (met, soil,
+#' etc.) are coordinated across runs. Ensemble designs typically use random or
+#' quasi-random sampling, while SA designs hold non-parameter inputs constant
+#' (OAT methodology).
+#'
 #' @param settings a PEcAn Settings or MultiSettings object
 #' @param overwrite logical: Replace config files if they already exist?
 #' @param input_design Optional design input. Can be a data.frame (ensemble) or
@@ -119,6 +129,10 @@ runModule.run.write.configs <- function(settings,
 }
 
 #' Prepare input designs for ensemble and sensitivity analysis
+#' Normalizes and generates input design matrices. This helper ensures
+#' consistent handling of the various input_design formats and
+#' auto-generates designs when needed.
+#'
 #' @param run Single-site run list (`settings$run`)
 #' @param ensemble Ensemble list (`settings$ensemble`)
 #' @param sensitivity Sensitivity list (`settings$sensitivity.analysis`)

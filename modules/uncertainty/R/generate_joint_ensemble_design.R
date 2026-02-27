@@ -11,6 +11,26 @@
 #'
 #' @return If `sobol = FALSE`, returns `list(X = design_matrix)`.
 #'   If `sobol = TRUE`, returns Sobol object that contains `$X`.
+#' @details
+#' Note on internal dependencies
+#'
+#' If samples.Rdata doesn't exist we call get.parameter.samples(), which loads
+#' parameter distributions.
+#'
+#' In practice it:
+#' - uses pft$posterior.files directly when it is defined (an Rdata file with
+#'   post.distns or prior.distns),
+#' - otherwise figures out an output directory from pft$outdir or, if needed,
+#'   via pft$posteriorid in the database,
+#' - then looks in that directory for post.distns.Rdata, falling back to
+#'   prior.distns.Rdata,
+#' - and, for MCMC posteriors, looks up trait.mcmc*.Rdata linked to the same
+#'   posteriorid or a trait.mcmc.Rdata file in that directory.
+#'
+#' Difference from generate_OAT_SA_design: This function samples inputs
+#' randomly or quasi-randomly, while generate_OAT_SA_design holds all
+#' non-parameter inputs constant to isolate parameter effects.
+#'
 #' @export
 
 generate_joint_ensemble_design <- function(run = NULL,
