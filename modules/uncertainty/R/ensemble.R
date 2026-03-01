@@ -566,11 +566,11 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
 
 #' Function for generating samples based on sampling method, parent or etc
 #'
-#' @param run list containing run inputs (typically `settings$run`)
+#' @param ensemble_size size of ensemble
 #' @param input name of input to sample, e.g. "met", "veg", "pss"
 #' @param method Method for sampling - For now looping or sampling with replacement is implemented
 #' @param parent_ids This is basically the order of the paths that the parent is sampled.See Details.
-#' @param ensemble_size size of ensemble
+#' @param run list containing run inputs (typically `settings$run`)
 #'
 #' @return For a given input/tag in the pecan xml and a method, this function returns a list with $id showing the order of sampling and $samples with samples of that input.
 #' @details If for example met was a parent and it's sampling method resulted in choosing the first, third and fourth samples, these are the ids that need to be sent as
@@ -581,24 +581,16 @@ write.ensemble.configs <- function(input_design , ensemble.size, defaults, ensem
 #' \dontrun{
 #'   settings <- PEcAn.settings::read.settings("pecan.xml")
 #'   input.ens.gen(
-#'     run = settings$run,
 #'     ensemble_size = 50,
 #'     input = "met",
-#'     method = "sampling"
+#'     method = "sampling",
+#'     run = settings$run
 #'   )
 #' }
 #'
-input.ens.gen <- function(run = NULL, ensemble_size, input, method = "sampling",
-                          parent_ids = NULL, settings = NULL) {
-
-  if (!is.null(settings)) {
-    .Deprecated(msg = paste(
-      "Passing `settings` to input.ens.gen() is deprecated.",
-      "Pass `run` explicitly."
-    ))
-    run <- run %||% settings$run
-  }
-  if (is.null(run)) {
+input.ens.gen <- function(ensemble_size, input, method = "sampling",
+                          parent_ids = NULL, run) {
+  if (missing(run) || is.null(run)) {
     stop("`run` is required.")
   }
 
@@ -612,7 +604,7 @@ input.ens.gen <- function(run = NULL, ensemble_size, input, method = "sampling",
   input_path <- run$inputs[[tolower(input)]]$path
   if (is.null(input_path)) {
     PEcAn.logger::logger.error(
-      "No paths found for input", sQuote(input), "in settings$run$inputs"
+      "No paths found for input", sQuote(input), "in run$inputs"
     )
   }
 

@@ -210,9 +210,12 @@ sda.enkf_local <- function(settings,
     names.sampler <- names.sampler[-which(names.sampler == "parameters")]
     # find a site that has all registered inputs except for the parameter field.
     if (all(names.sampler %in% names.site.input)) {
-      input_design <- PEcAn.uncertainty::generate_joint_ensemble_design(settings = settings[[i]], 
-                                                                        ensemble_samples = ensemble.samples, 
-                                                                        ensemble_size = nens)[[1]]
+      input_design <- PEcAn.uncertainty::generate_joint_ensemble_design(
+        run = settings[[i]]$run,
+        ensemble = settings[[i]]$ensemble,
+        ensemble_size = nens,
+        samples = list(ensemble.samples = ensemble.samples)
+      )[[1]]
       break
     }
   }

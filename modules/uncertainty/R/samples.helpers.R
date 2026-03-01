@@ -39,7 +39,9 @@ get.distns <- function(pfts, outdir = NULL, dbCon = NULL, host = NULL,
 
   for (i in seq_along(pfts)) {
     dist_env <- new.env(parent = emptyenv())
+    ## Load posteriors
     if (!is.na(posterior.files[i])) {
+      # Load specified file
       load(posterior.files[i], envir = dist_env)
       if (is.null(dist_env$prior.distns) && !is.null(dist_env$post.distns)) {
         dist_env$prior.distns <- dist_env$post.distns
@@ -54,6 +56,8 @@ get.distns <- function(pfts, outdir = NULL, dbCon = NULL, host = NULL,
       next
     }
 
+    # Default to most recent posterior in the workflow,
+    # or the prior if there is none
     post_file <- file.path(pft_outdir, "post.distns.Rdata")
     prior_file <- file.path(pft_outdir, "prior.distns.Rdata")
     if (file.exists(post_file)) {
@@ -69,7 +73,7 @@ get.distns <- function(pfts, outdir = NULL, dbCon = NULL, host = NULL,
   distns
 }
 
-#' Internal helper to load trait MCMC chains per PFT
+#' Internal helper to Load trait mcmc data (if exists, either from MA or PDA)
 #' @keywords internal
 get.trait.mcmc <- function(pfts, outdir = NULL, dbCon = NULL, host = NULL,
                            outdirs = NULL) {
@@ -87,6 +91,7 @@ get.trait.mcmc <- function(pfts, outdir = NULL, dbCon = NULL, host = NULL,
   for (i in seq_along(pfts)) {
     trait_file <- NULL
     if (!is.null(dbCon) && !is.null(pfts[[i]]$posteriorid)) {
+      # first check if there are any files associated with posterior ids
       files <- PEcAn.DB::dbfile.check(
         "Posterior",
         pfts[[i]]$posteriorid,
@@ -110,6 +115,7 @@ get.trait.mcmc <- function(pfts, outdir = NULL, dbCon = NULL, host = NULL,
     env <- new.env(parent = emptyenv())
     load(trait_file, envir = env)
     chains[[i]] <- env$trait.mcmc
+    attr(chains[[i]], "source_file") <- trait_file
   }
 
   chains
