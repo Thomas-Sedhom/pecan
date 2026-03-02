@@ -71,6 +71,11 @@ if (!is.null(settings$database$bety)) {
     on.exit(try(PEcAn.DB::db.close(dbCon), silent = TRUE), add = TRUE)
   }
 }
-settings <- PEcAn.workflow::runModule.run.write.configs(settings, dbCon = dbCon)
+designs <- PEcAn.workflow::generate_input_design(settings, dbCon = dbCon)
+settings <- PEcAn.workflow::runModule.run.write.configs(
+  settings,
+  input_design = designs,
+  dbCon = dbCon
+)
 PEcAn.settings::write.settings(settings, outputfile = "pecan.CONFIGS.xml")
 PEcAn.utils::status.end()

@@ -112,8 +112,13 @@ if (PEcAn.utils::status.check("CONFIG") == 0) {
       PEcAn.logger::logger.warn("Could not open database connection for CONFIG stage; proceeding without dbCon.")
     }
   }
+  designs <- PEcAn.workflow::generate_input_design(settings, dbCon = dbCon)
   settings <-
-    PEcAn.workflow::runModule.run.write.configs(settings, dbCon = dbCon)
+    PEcAn.workflow::runModule.run.write.configs(
+      settings,
+      input_design = designs,
+      dbCon = dbCon
+    )
   PEcAn.settings::write.settings(settings, outputfile = "pecan.CONFIGS.xml")
   PEcAn.utils::status.end()
 } else if (file.exists(file.path(settings$outdir, "pecan.CONFIGS.xml"))) {

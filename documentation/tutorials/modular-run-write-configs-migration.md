@@ -18,7 +18,7 @@ This created hidden dependencies between steps and reduced testability.
 
 ## New Flow
 
-1. `runModule.run.write.configs(settings, dbCon = dbCon)` orchestrates explicit object assembly.
+1. `generate_input_design(settings, dbCon = dbCon)` prepares explicit samples and normalized design matrices.
 2. Internal helper loaders resolve:
    - `distns`
    - `trait.mcmc`
@@ -26,7 +26,7 @@ This created hidden dependencies between steps and reduced testability.
 3. `get.parameter.samples(...)` returns a structured `samples` object.
 4. `generate_joint_ensemble_design(run, ensemble, ensemble_size, samples, sobol = FALSE)` builds design from explicit inputs.
 5. `generate_OAT_SA_design(ensemble, samples)` builds OAT design from explicit inputs.
-6. `run.write.configs(..., samples = samples)` consumes explicit samples directly.
+6. `runModule.run.write.configs(settings, input_design = designs, dbCon = dbCon)` consumes that bundle and delegates to `run.write.configs(..., samples = samples)`.
 
 ## Function-by-Function Legacy vs New
 
@@ -91,6 +91,17 @@ Required settings attributes passed in by caller:
 - `settings$ensemble`
 - `settings$sensitivity.analysis`
 - explicit `samples`
+
+---
+
+### `generate_input_design` (`base/workflow/R/runModule.run.write.configs.R`)
+
+| Aspect | Legacy Pattern | New Pattern |
+|---|---|---|
+| Config orchestration | `runModule.run.write.configs` built designs internally | New exported helper builds designs first |
+| Parameters | N/A | `settings, input_design = NULL, dbCon` |
+| Output contract | N/A | `list(ensemble = ..., sensitivity = ..., samples = ...)` |
+| MultiSettings behavior | Internal branching in writer | Shared design/samples generated once from first site |
 
 ---
 
@@ -185,7 +196,7 @@ runModule.run.write.configs(settings)
 ### New Flow Diagram
 
 ```text
-runModule.run.write.configs(settings, dbCon)
+generate_input_design(settings, input_design = NULL, dbCon)
   -> .prepare_samples(pfts, outdir, ensemble, sensitivity, host, dbCon)
       -> get.distns(...)
       -> get.trait.mcmc(...)
@@ -194,6 +205,8 @@ runModule.run.write.configs(settings, dbCon)
   -> .prepare_input_designs(run, ensemble, sensitivity, samples, input_design)
       -> generate_joint_ensemble_design(run, ensemble, ensemble_size, samples, sobol=FALSE)
       -> generate_OAT_SA_design(ensemble, samples)
+  -> return list(ensemble, sensitivity, samples)
+runModule.run.write.configs(settings, input_design = designs, dbCon)
   -> run.write.configs(settings, ..., input_design, samples)
       -> write configs
 ```
@@ -211,13 +224,19 @@ The following compatibility paths remain temporarily and emit deprecation warnin
 dbCon <- PEcAn.DB::db.open(settings$database$bety)
 on.exit(try(PEcAn.DB::db.close(dbCon), silent = TRUE), add = TRUE)
 
+designs <- PEcAn.workflow::generate_input_design(
+  settings = settings,
+  dbCon = dbCon
+)
+
 settings <- PEcAn.workflow::runModule.run.write.configs(
   settings = settings,
+  input_design = designs,
   dbCon = dbCon
 )
 ```
 
 ## Migration Notes
 
-- Existing workflows can continue using compatibility paths during the deprecation window.
+- `runModule.run.write.configs()` now requires pre-generated `input_design` that includes `samples`.
 - New development should pass explicit objects and avoid relying on `samples.Rdata`.

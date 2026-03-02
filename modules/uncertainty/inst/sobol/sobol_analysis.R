@@ -24,7 +24,16 @@ if (!is.null(settings$database$bety)) {
   }
 }
   
-PEcAn.workflow::runModule.run.write.configs(settings, input_design = sobol_obj$X, dbCon = dbCon)
+designs <- PEcAn.workflow::generate_input_design(
+  settings,
+  input_design = sobol_obj$X,
+  dbCon = dbCon
+)
+PEcAn.workflow::runModule.run.write.configs(
+  settings,
+  input_design = designs,
+  dbCon = dbCon
+)
  
   
 PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = stop_on_error)

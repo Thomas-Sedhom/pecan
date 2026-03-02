@@ -58,7 +58,12 @@ if (!is.null(settings$database$bety)) {
     dbCon <- maybe_con
   }
 }
-settings <- PEcAn.workflow::runModule.run.write.configs(settings, dbCon = dbCon)
+designs <- PEcAn.workflow::generate_input_design(settings, dbCon = dbCon)
+settings <- PEcAn.workflow::runModule.run.write.configs(
+  settings,
+  input_design = designs,
+  dbCon = dbCon
+)
 if (!is.null(dbCon)) PEcAn.DB::db.close(dbCon)
 
 # Taking average of samples to have fixed params across nens
@@ -130,7 +135,12 @@ if (!is.null(settings$database$bety)) {
     dbCon <- maybe_con
   }
 }
-settings <- PEcAn.workflow::runModule.run.write.configs(settings, dbCon = dbCon)
+designs <- PEcAn.workflow::generate_input_design(settings, dbCon = dbCon)
+settings <- PEcAn.workflow::runModule.run.write.configs(
+  settings,
+  input_design = designs,
+  dbCon = dbCon
+)
 if (!is.null(dbCon)) PEcAn.DB::db.close(dbCon)
 PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = FALSE)
 
@@ -185,7 +195,12 @@ if (!is.null(settings$database$bety)) {
     dbCon <- maybe_con
   }
 }
-settings <- PEcAn.workflow::runModule.run.write.configs(settings, dbCon = dbCon)
+designs <- PEcAn.workflow::generate_input_design(settings, dbCon = dbCon)
+settings <- PEcAn.workflow::runModule.run.write.configs(
+  settings,
+  input_design = designs,
+  dbCon = dbCon
+)
 if (!is.null(dbCon)) PEcAn.DB::db.close(dbCon)
 PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = FALSE)
 
