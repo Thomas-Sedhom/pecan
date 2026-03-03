@@ -249,8 +249,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     fname <- PEcAn.uncertainty::sensitivity.filename(settings, "sensitivity.samples", "Rdata",
       all.var.yr = TRUE, pft = NULL
     )
-    save(sa.run.ids, sa.ensemble.id, sa.samples, pft.names, trait.names, file = 
-    )
+    save(sa.run.ids, sa.ensemble.id, sa.samples, pft.names, trait.names, file = fname)
   } ### End of SA
 
   ### Write ENSEMBLE
