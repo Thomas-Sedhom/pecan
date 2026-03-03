@@ -25,7 +25,9 @@
 #'    Specify filenames with no path; PFT outdirs will be appended. This forces use of only
 #'    files within this workflow, to avoid confusion.
 #'
-#' @return an updated settings list, which includes ensemble IDs for SA and ensemble analysis
+#' @return A list with \code{settings} (updated settings list including
+#'   ensemble IDs) and \code{samples} (canonical samples object used for
+#'   config writing).
 #' @export
 #'
 #' @author David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze, Akash B V
@@ -247,7 +249,8 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     fname <- PEcAn.uncertainty::sensitivity.filename(settings, "sensitivity.samples", "Rdata",
       all.var.yr = TRUE, pft = NULL
     )
-    save(sa.run.ids, sa.ensemble.id, sa.samples, pft.names, trait.names, file = fname)
+    save(sa.run.ids, sa.ensemble.id, sa.samples, pft.names, trait.names, file = 
+    )
   } ### End of SA
 
   ### Write ENSEMBLE
@@ -295,8 +298,19 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
   
   PEcAn.logger::logger.info("Run manifest written to ", manifest.file)
 
+  samples_out <- samples
+  if (is.null(samples_out)) {
+    samples_out <- list(
+      trait.samples = trait.samples,
+      sa.samples = sa.samples,
+      ensemble.samples = ensemble.samples,
+      runs.samples = list(),
+      env.samples = list()
+    )
+  }
+
   options(scipen = scipen)
-  return(invisible(settings))
+  return(list(settings = settings, samples = samples_out))
 }
 
 .validate_runwrite_samples <- function(samples) {

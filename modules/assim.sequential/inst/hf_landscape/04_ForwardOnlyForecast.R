@@ -65,12 +65,16 @@ pft.names = unlist(sapply(set$pfts,function(x){x$name}))
 set$pfts[[which(is.na(pft.names))]] = NULL
 
 ## run workflow
-designs <- PEcAn.workflow::generate_input_design(set, dbCon = con)
-set <- PEcAn.workflow::runModule.run.write.configs(
+samples <- PEcAn.workflow:::.prepare_samples(set, dbCon = con)
+designs <- PEcAn.workflow::generate_input_design(set, samples = samples)
+config_stage <- PEcAn.workflow::runModule.run.write.configs(
   set,
   input_design = designs,
+  samples = samples,
   dbCon = con
 )
+set <- config_stage$settings
+samples <- config_stage$samples
 PEcAn.DB::db.close(con)
 PEcAn.workflow::runModule_start_model_runs(set, stop.on.error = FALSE)
 

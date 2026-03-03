@@ -19,18 +19,19 @@ This created hidden dependencies between steps and reduced testability.
 ## New Flow
 
 1. Open a DB connection (`dbCon`) before config generation.
-2. `generate_input_design(settings, dbCon = dbCon)` prepares explicit samples and normalized design matrices.
-3. Internal helper loaders resolve:
+2. `.prepare_samples(settings, dbCon = dbCon)` prepares canonical shared samples once.
+3. Inside `.prepare_samples(...)`, internal helper loaders resolve:
    - `distns`
    - `trait.mcmc`
    - optional ensemble sample structures
 4. `get.parameter.samples(...)` returns a structured `samples` object.
-5. `generate_joint_ensemble_design(run, ensemble, ensemble_size, samples, sobol = FALSE)` builds ensemble design from explicit inputs.
-6. `generate_OAT_SA_design(ensemble, samples)` builds OAT sensitivity design from explicit inputs.
-7. `generate_input_design(...)` returns:
-   - `list(ensemble = ..., sensitivity = ..., samples = ...)`
-8. `runModule.run.write.configs(settings, input_design = designs, dbCon = dbCon)` requires that bundle and delegates to `run.write.configs(..., samples = samples)`.
-9. For `MultiSettings`, the same shared `input_design` bundle is generated once (from `settings[1]`) and reused across all sites to keep sampling/design consistent.
+5. `generate_input_design(settings, samples, input_design = NULL)` prepares normalized design matrices from explicit samples.
+6. `generate_joint_ensemble_design(run, ensemble, ensemble_size, samples, sobol = FALSE)` builds ensemble design from explicit inputs.
+7. `generate_OAT_SA_design(ensemble, samples)` builds OAT sensitivity design from explicit inputs.
+8. `generate_input_design(...)` returns:
+   - `list(ensemble = ..., sensitivity = ...)`
+9. `runModule.run.write.configs(settings, input_design = designs, samples = samples, dbCon = dbCon)` requires explicit design + samples and delegates to `run.write.configs(..., samples = samples)`.
+10. For `MultiSettings`, the same shared `samples` and `input_design` objects are reused across all sites to keep sampling/design consistent.
 
 ## Function-by-Function Legacy vs New
 
@@ -38,12 +39,13 @@ This created hidden dependencies between steps and reduced testability.
 
 | Aspect | Legacy Pattern | New Pattern |
 |---|---|---|
-| Input style | Implicit full `settings` | Explicit required inputs only |
+| Input style | Implicit full `settings` with hidden file coupling | Explicit `settings` + `dbCon`, with explicit object return |
 | File/DB side effects | Could be hidden in downstream calls | Requires explicit `dbCon`; no `samples.Rdata` read/write in this function |
-| Parameters | `settings` | `pfts, outdir, ensemble, sensitivity, host, dbCon` |
+| Parameters | `settings` | `settings, dbCon` |
 | Output | Implicit downstream state | Structured `samples` object from `get.parameter.samples(...)` |
+| MultiSettings behavior | Inherited from callers | Internally uses `settings[1]` as base settings |
 
-Required settings attributes passed in by caller:
+Settings attributes extracted internally:
 - `settings$pfts`
 - `settings$outdir`
 - `settings$ensemble`
@@ -102,15 +104,15 @@ Required settings attributes passed in by caller:
 
 | Aspect | Legacy Pattern | New Pattern |
 |---|---|---|
-| Config orchestration | `runModule.run.write.configs` built designs internally | New exported helper builds designs first |
-| Parameters | N/A | `settings, input_design = NULL, dbCon` |
-| Output contract | N/A | `list(ensemble = ..., sensitivity = ..., samples = ...)` |
-| Validation | N/A | Requires non-NULL `dbCon`; validates `Settings`/`MultiSettings` |
-| MultiSettings behavior | Internal branching in writer | Shared design/samples generated once from first site |
+| Config orchestration | `runModule.run.write.configs` built designs internally | Design generation is separated and called before config writing |
+| Parameters | N/A | `settings, samples, input_design = NULL` |
+| Output contract | N/A | `list(ensemble = ..., sensitivity = ...)` |
+| Validation | N/A | Requires non-NULL `samples`; validates `Settings`/`MultiSettings` |
+| MultiSettings behavior | Internal branching in writer | Uses `settings[1]` internally when normalizing/generating designs |
 
 Required inputs passed in by caller:
 - `settings` (`Settings` or `MultiSettings`)
-- open `dbCon`
+- pre-built `samples` object
 - optional `input_design` override (data.frame or normalized list)
 
 ---
@@ -208,23 +210,26 @@ runModule.run.write.configs(settings)
 ```text
 Caller
   -> dbCon <- db.open(...)
-  -> designs <- generate_input_design(settings, input_design = NULL, dbCon)
+  -> samples <- .prepare_samples(settings, dbCon)
       -> (if MultiSettings) use settings[1] as base settings
-      -> .prepare_samples(pfts, outdir, ensemble, sensitivity, host, dbCon)
-          -> get.distns(...)
-          -> get.trait.mcmc(...)
-          -> get.parameter.samples(pfts, outdir, sensitivity, trait.mcmc, distns, ensemble, ...)
-          -> return samples (in memory)
+      -> get.distns(...)
+      -> get.trait.mcmc(...)
+      -> get.parameter.samples(pfts, outdir, sensitivity, trait.mcmc, distns, ensemble, ...)
+      -> return samples (in memory)
+  -> designs <- generate_input_design(settings, samples, input_design = NULL)
+      -> (if MultiSettings) use settings[1] as base settings
       -> .prepare_input_designs(run, ensemble, sensitivity, samples, input_design)
           -> generate_joint_ensemble_design(run, ensemble, ensemble_size, samples, sobol=FALSE)
           -> generate_OAT_SA_design(ensemble, samples)
-      -> return list(ensemble, sensitivity, samples)
-  -> runModule.run.write.configs(settings, input_design = designs, dbCon)
+      -> return list(ensemble, sensitivity)
+  -> runModule.run.write.configs(settings, input_design = designs, samples = samples, dbCon)
       -> validate required input_design contract
       -> if MultiSettings: papply over sites with same shared designs/samples
       -> if Settings: call run.write.configs for SA and/or ensemble
           -> run.write.configs(settings, ..., input_design, samples)
               -> write configs
+              -> return list(settings = updated_settings, samples = samples)
+      -> return list(settings = settings_final, samples = samples)
   -> db.close(dbCon)
 ```
 
@@ -241,19 +246,27 @@ The following compatibility paths remain temporarily and emit deprecation warnin
 dbCon <- PEcAn.DB::db.open(settings$database$bety)
 on.exit(try(PEcAn.DB::db.close(dbCon), silent = TRUE), add = TRUE)
 
-designs <- PEcAn.workflow::generate_input_design(
+samples <- PEcAn.workflow:::.prepare_samples(
   settings = settings,
   dbCon = dbCon
 )
 
-settings <- PEcAn.workflow::runModule.run.write.configs(
+designs <- PEcAn.workflow::generate_input_design(
+  settings = settings,
+  samples = samples
+)
+
+config_stage <- PEcAn.workflow::runModule.run.write.configs(
   settings = settings,
   input_design = designs,
+  samples = samples,
   dbCon = dbCon
 )
+settings <- config_stage$settings
+samples <- config_stage$samples
 ```
 
 ## Migration Notes
 
-- `runModule.run.write.configs()` now requires pre-generated `input_design` that includes `samples`.
+- `runModule.run.write.configs()` now requires both pre-generated `input_design` and explicit `samples`.
 - New development should pass explicit objects and avoid relying on `samples.Rdata`.

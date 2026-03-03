@@ -2,23 +2,24 @@
 % Please edit documentation in R/runModule.run.write.configs.R
 \name{generate_input_design}
 \alias{generate_input_design}
-\title{Generate explicit input designs and samples for config writing}
+\title{Generate explicit input designs for config writing}
 \usage{
-generate_input_design(settings, input_design = NULL, dbCon = NULL)
+generate_input_design(settings, samples, input_design = NULL)
 }
 \arguments{
 \item{settings}{a PEcAn Settings or MultiSettings object}
 
+\item{samples}{Structured samples object from
+\code{.prepare_samples(settings, dbCon)}.}
+
 \item{input_design}{Optional user-supplied design input. Can be a data.frame
 (ensemble design) or a list with \code{ensemble}/\code{sensitivity}
 entries.}
-
-\item{dbCon}{a valid, open DB connection.}
 }
 \value{
-A list with \code{ensemble}, \code{sensitivity}, and \code{samples}.
+A list with \code{ensemble} and \code{sensitivity} designs.
 }
 \description{
-Generates normalized design matrices and structured samples object to be
-passed into \code{\link{runModule.run.write.configs}}.
+Generates normalized design matrices from explicit settings and a pre-built
+samples object.
 }

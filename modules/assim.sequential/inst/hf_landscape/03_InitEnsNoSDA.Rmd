@@ -26,12 +26,16 @@ if (!is.null(settings$database$bety)) {
     dbCon <- maybe_con
   }
 }
-designs <- PEcAn.workflow::generate_input_design(settings, dbCon = dbCon)
-settings <- PEcAn.workflow::runModule.run.write.configs(
+samples <- PEcAn.workflow:::.prepare_samples(settings, dbCon = dbCon)
+designs <- PEcAn.workflow::generate_input_design(settings, samples = samples)
+config_stage <- PEcAn.workflow::runModule.run.write.configs(
   settings,
   input_design = designs,
+  samples = samples,
   dbCon = dbCon
 )
+settings <- config_stage$settings
+samples <- config_stage$samples
 if (!is.null(dbCon)) PEcAn.DB::db.close(dbCon)
 PEcAn.workflow::runModule_start_model_runs(settings, stop.on.error = FALSE)
 #runModule.get.results(settings)

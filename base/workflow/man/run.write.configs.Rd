@@ -10,7 +10,8 @@ run.write.configs(
   input_design,
   write = TRUE,
   posterior.files = rep(NA, length(settings$pfts)),
-  overwrite = TRUE
+  overwrite = TRUE,
+  samples = NULL
 )
 }
 \arguments{
@@ -28,9 +29,15 @@ as documented in \code{runModule.run.write.configs()}.}
 analysis (e.g. post.distns.Rdata, or prior.distns.Rdata)}
 
 \item{overwrite}{logical: Replace output files that already exist?}
+
+\item{samples}{Optional structured samples object. Preferred input for modular
+workflows. Must include `trait.samples`, `sa.samples`, `ensemble.samples`,
+`runs.samples`, and `env.samples`.}
 }
 \value{
-an updated settings list, which includes ensemble IDs for SA and ensemble analysis
+A list with \code{settings} (updated settings list including
+ensemble IDs) and \code{samples} (canonical samples object used for
+config writing).
 }
 \description{
 Generates run scripts and configuration files for all analyses specified

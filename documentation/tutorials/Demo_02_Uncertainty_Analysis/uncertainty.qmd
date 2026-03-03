@@ -122,17 +122,22 @@ See Demo 1 Section 6 for details on what these functions do. Briefly, they read 
 
 This step generates the model-specific configuration files that will be used to run the ecosystem model. The process involves:
 
-2. Generating an explicit design bundle with `generate_input_design()`.
-3. Passing that bundle to `runModule.run.write.configs()` for config writing.
+2. Preparing shared samples with `.prepare_samples()`.
+3. Generating an explicit design bundle with `generate_input_design()`.
+4. Passing both to `runModule.run.write.configs()` for config writing.
 ```{r write-configs}
 dbCon <- PEcAn.DB::db.open(settings$database$bety)
 on.exit(PEcAn.DB::db.close(dbCon), add = TRUE)
-designs <- PEcAn.workflow::generate_input_design(settings, dbCon = dbCon)
-settings <- PEcAn.workflow::runModule.run.write.configs(
+samples <- PEcAn.workflow:::.prepare_samples(settings, dbCon = dbCon)
+designs <- PEcAn.workflow::generate_input_design(settings, samples = samples)
+config_stage <- PEcAn.workflow::runModule.run.write.configs(
   settings,
   input_design = designs,
+  samples = samples,
   dbCon = dbCon
 )
+settings <- config_stage$settings
+samples <- config_stage$samples
 ```
 
 # Run Model Simulations

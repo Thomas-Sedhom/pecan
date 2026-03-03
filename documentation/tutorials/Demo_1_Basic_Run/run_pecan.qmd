@@ -191,17 +191,21 @@ Additional outputs include logs, a `STATUS` file that records the steps of the w
 
 # Write Model Configuration Files
 
-This step generates the model-specific configuration files and scripts that will be used to run the ecosystem model. The process now first generates an explicit design bundle (including samples), then passes that into `runModule.run.write.configs()`.
+This step generates the model-specific configuration files and scripts that will be used to run the ecosystem model. The process first prepares shared samples, then generates an explicit design bundle, and passes both into `runModule.run.write.configs()`.
 
 ```{r write-configs}
 dbCon <- PEcAn.DB::db.open(settings$database$bety)
 on.exit(PEcAn.DB::db.close(dbCon), add = TRUE)
-designs <- PEcAn.workflow::generate_input_design(settings, dbCon = dbCon)
-settings <- PEcAn.workflow::runModule.run.write.configs(
+samples <- PEcAn.workflow:::.prepare_samples(settings, dbCon = dbCon)
+designs <- PEcAn.workflow::generate_input_design(settings, samples = samples)
+config_stage <- PEcAn.workflow::runModule.run.write.configs(
   settings,
   input_design = designs,
+  samples = samples,
   dbCon = dbCon
 )
+settings <- config_stage$settings
+samples <- config_stage$samples
 ```
 
 # Run Model Simulations and Fetch Results

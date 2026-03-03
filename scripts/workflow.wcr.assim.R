@@ -84,12 +84,16 @@ if (PEcAn.utils::status.check("CONFIG") == 0){
       on.exit(try(PEcAn.DB::db.close(dbCon), silent = TRUE), add = TRUE)
     }
   }
-  designs <- PEcAn.workflow::generate_input_design(settings, dbCon = dbCon)
-  settings <- PEcAn.workflow::runModule.run.write.configs(
+  samples <- PEcAn.workflow:::.prepare_samples(settings, dbCon = dbCon)
+  designs <- PEcAn.workflow::generate_input_design(settings, samples = samples)
+  config_stage <- PEcAn.workflow::runModule.run.write.configs(
     settings,
     input_design = designs,
+    samples = samples,
     dbCon = dbCon
   )
+  settings <- config_stage$settings
+  samples <- config_stage$samples
   PEcAn.settings::write.settings(settings, outputfile='pecan.CONFIGS.xml')
   PEcAn.utils::status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
