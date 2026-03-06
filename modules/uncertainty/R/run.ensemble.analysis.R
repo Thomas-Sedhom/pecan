@@ -120,7 +120,7 @@ run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = 
       
       ### Plot ensemble time-series
       if (!is.na(plot.timeseries)) {
-        fname <- ensemble.filename(settings, "ensemble.ts", "pdf",
+        fname <- ensemble.filename(settings, "c", "pdf",
                                    all.var.yr = FALSE, 
                                    ensemble.id = ensemble.id, 
                                    variable = variable.fn,

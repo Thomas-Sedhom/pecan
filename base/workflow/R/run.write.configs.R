@@ -212,7 +212,72 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     do.call(my.remove.config, args = list(settings$rundir, settings))
   }
 
-  # TODO RK : need to write to runs_inputs table
+  write.runs.inputs <- function(run_ids, design_rows) {
+    if (!isTRUE(write) ||
+        is.null(con) ||
+        !is.data.frame(input_design) ||
+        length(run_ids) == 0 ||
+        length(design_rows) == 0) {
+      return(invisible(NULL))
+    }
+
+    input_tags <- intersect(setdiff(colnames(input_design), "param"), names(settings$run$inputs))
+    if (length(input_tags) == 0) {
+      return(invisible(NULL))
+    }
+
+    rows_to_write <- vector("list", length(input_tags))
+    row_count <- 0L
+
+    for (input_tag in input_tags) {
+      input_entry <- settings$run$inputs[[input_tag]]
+      input_ids <- input_entry$id
+
+      if (is.null(input_ids)) {
+        next
+      }
+
+      input_ids <- unlist(input_ids, use.names = FALSE)
+      selected_indices <- input_design[[input_tag]][design_rows]
+
+      if (length(input_ids) == 1L) {
+        selected_ids <- rep(input_ids[[1]], length(run_ids))
+      } else if (length(input_ids) >= max(selected_indices, na.rm = TRUE)) {
+        selected_ids <- input_ids[selected_indices]
+      } else {
+        next
+      }
+
+      valid <- !is.na(selected_ids)
+      if (!any(valid)) {
+        next
+      }
+
+      row_count <- row_count + 1L
+      rows_to_write[[row_count]] <- data.frame(
+        run_id = run_ids[valid],
+        input_id = selected_ids[valid],
+        stringsAsFactors = FALSE
+      )
+    }
+
+    if (row_count == 0L) {
+      return(invisible(NULL))
+    }
+
+    runs_inputs <- unique(do.call(rbind, rows_to_write[seq_len(row_count)]))
+    tryCatch(
+      DBI::dbAppendTable(con, "runs_inputs", runs_inputs),
+      error = function(e) {
+        PEcAn.logger::logger.warn(
+          "Failed writing runs_inputs associations: ",
+          conditionMessage(e)
+        )
+      }
+    )
+
+    invisible(NULL)
+  }
 
   # Save names
   pft.names <- names(trait.samples)
@@ -241,6 +306,10 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
       run_manifest_df <- rbind(run_manifest_df, sa.runs$manifest)
     }
 
+    if ("manifest" %in% names(sa.runs)) {
+      write.runs.inputs(sa.runs$manifest$run_id, seq_len(nrow(sa.runs$manifest)))
+    }
+
     # Store output in settings and output variables
     sa.run.ids <- sa.runs$runs
     settings$sensitivity.analysis$ensemble.id <- sa.ensemble.id <- sa.runs$ensemble.id
@@ -267,6 +336,10 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
     # collect manifest data
     if ("manifest" %in% names(ens.runs)) {
       run_manifest_df <- rbind(run_manifest_df, ens.runs$manifest)
+    }
+
+    if (!is.null(ens.runs$runs) && "id" %in% names(ens.runs$runs)) {
+      write.runs.inputs(ens.runs$runs$id, seq_len(nrow(ens.runs$runs)))
     }
 
     # Store output in settings and output variables
