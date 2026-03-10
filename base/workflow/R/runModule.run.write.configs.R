@@ -145,7 +145,7 @@ runModule.run.write.configs <- function(settings,
       settings$ensemble$size %||% 1
     }
 
-    settings_ens_out <- PEcAn.workflow::run.write.configs(
+    F <- PEcAn.workflow::run.write.configs(
       settings = settings_ens,
       ensemble.size = ensemble_size,
       write = write_to_db,

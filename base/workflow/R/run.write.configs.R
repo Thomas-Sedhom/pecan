@@ -223,7 +223,7 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
 
     input_tags <- intersect(setdiff(colnames(input_design), "param"), names(settings$run$inputs))
     if (length(input_tags) == 0) {
-      return(invisible(NULL))
+      return(invisible(NULL))f
     }
 
     rows_to_write <- vector("list", length(input_tags))
