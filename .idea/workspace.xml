@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BackendCodeEditorMiscSettings">
+    <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
+  </component>
+  <component name="CMakeRunConfigurationManager">
+    <generated />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="eb78e51e-45cb-4de4-acb0-79a06b1e05a0" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/base/workflow/R/run.write.configs.R" beforeDir="false" afterPath="$PROJECT_DIR$/base/workflow/R/run.write.configs.R" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/tutorials/modular-run-assim-batch-emulator-ms-migration.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/tutorials/modular-run-assim-batch-emulator-ms-migration.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/tutorials/modular-run-ensemble-analysis-migration.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/tutorials/modular-run-ensemble-analysis-migration.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/tutorials/modular-run-get-results-migration.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/tutorials/modular-run-get-results-migration.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/tutorials/modular-run-sensitivity-analysis-migration.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/tutorials/modular-run-sensitivity-analysis-migration.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/tutorials/modular-run-start-model-runs-migration.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/tutorials/modular-run-start-model-runs-migration.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/tutorials/modular-run-write-configs-migration.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/tutorials/modular-run-write-configs-migration.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/increase_modularity_plan/base/utils.md" beforeDir="false" afterPath="$PROJECT_DIR$/increase_modularity_plan/base/utils.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/increase_modularity_plan/base/workflow.md" beforeDir="false" afterPath="$PROJECT_DIR$/increase_modularity_plan/base/workflow.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/increase_modularity_plan/modules/uncertainty.md" beforeDir="false" afterPath="$PROJECT_DIR$/increase_modularity_plan/modules/uncertainty.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/uncertainty/R/ensemble.R" beforeDir="false" afterPath="$PROJECT_DIR$/modules/uncertainty/R/ensemble.R" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/uncertainty/R/get.results.R" beforeDir="false" afterPath="$PROJECT_DIR$/modules/uncertainty/R/get.results.R" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_D:/GSOC/pecan" value="3AtYoOLu2cLn3gKq7FNrVm4HDIR" />
+    </persistenceIdMap>
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MakefileLocalSettings">
+    <option name="projectSyncType">
+      <map>
+        <entry key="$PROJECT_DIR$" value="RE_IMPORT" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectApplicationVersion">
+    <option name="ide" value="CLion" />
+    <option name="majorVersion" value="2025" />
+    <option name="minorVersion" value="1.1" />
+    <option name="productBranch" value="Classic" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 5
+}]]></component>
+  <component name="ProjectId" id="3AtYoOLu2cLn3gKq7FNrVm4HDIR" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.RadMigrateCodeStyle": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "increase__modularity__v2",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="eb78e51e-45cb-4de4-acb0-79a06b1e05a0" name="Changes" comment="" />
+      <created>1773413512221</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1773413512221</updated>
+      <workItem from="1773413515800" duration="40000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
+  </component>
+</project>

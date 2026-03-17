@@ -42,15 +42,15 @@ This creates hidden dependencies, large function scope, and lower testability.
 
 1. Preferred path: caller prepares and passes required settings attributes and required objects:
    - required settings attributes: `ensemble`, `modeloutdir`, `sensitivity`, `outdir`, `pfts`
-   - required objects: `sensitivity.samples`, `ensemble.samples`, `manifest`
-2. `runModule.get.results(settings, sensitivity.samples = NULL, ensemble.samples = NULL, manifest = NULL, ...)`
+   - required objects: `samples`, `manifest`
+2. `runModule.get.results(settings, samples = NULL, manifest = NULL, write = TRUE, ...)`
    orchestrates Settings/MultiSettings and forwards explicit inputs.
-3. `get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, sensitivity.samples, ensemble.samples, manifest, ...)`
+3. `get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, samples, manifest, write = FALSE, ...)`
    performs core sensitivity-output computation without internal `load()` / `read.csv()`.
 4. `read.sa.output(..., manifest, ...)` uses provided manifest object; no internal file read.
 5. Core path returns `sensitivity.output` (and optional metadata/file-targets payload).
 6. Wrapper-only compatibility path may load missing objects from disk temporarily and emits deprecation warnings.
-7. If wrapper writes files, it returns written paths explicitly.
+7. If `write = TRUE`, the wrapper writes files and returns written paths explicitly.
 
 ## Function-by-Function Legacy vs New
 
@@ -58,11 +58,11 @@ This creates hidden dependencies, large function scope, and lower testability.
 
 | Aspect | Legacy Pattern | New Pattern |
 |---|---|---|
-| Input style | `settings` only | `settings` + explicit objects (`sensitivity.samples`, `ensemble.samples`, `manifest`) |
+| Input style | `settings` only | `settings` + explicit objects (`samples`, `manifest`) |
 | Settings usage | Passed wholesale to core | Used for orchestration and extracting required attrs only |
 | MultiSettings behavior | `papply` with implicit file coupling | `papply` with per-site explicit objects |
 | Compatibility path | N/A | Missing objects trigger deprecated internal loaders with warning |
-| Return | Implicit side effects | Structured return including `sensitivity.output`; wrapper also returns `files_written` if writing |
+| Return | Implicit side effects | Structured return including `sensitivity.output`; wrapper also returns `files_written` when `write = TRUE` |
 
 Required extracted/passed attrs per site:
 - `ensemble`
@@ -72,8 +72,7 @@ Required extracted/passed attrs per site:
 - `pfts`
 
 Required objects per site:
-- `sensitivity.samples`
-- `ensemble.samples`
+- `samples`
 - `manifest`
 
 ---
@@ -82,10 +81,10 @@ Required objects per site:
 
 | Aspect | Legacy Pattern | New Pattern |
 |---|---|---|
-| Main API | `get.results(settings, ...)` | `get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, sensitivity.samples, ensemble.samples, manifest, ...)` |
+| Main API | `get.results(settings, ...)` | `get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, samples, manifest, write = FALSE, ...)` |
 | File dependencies | Internal `load()` and implicit object reconstruction | No internal loading in primary path |
 | Manifest dependency | Delegated to `read.sa.output()` internal disk read | Manifest passed explicitly to lower layer |
-| Side effects | Saves `sensitivity.output.*.Rdata` internally | Core returns `sensitivity.output`; writing handled by wrapper helper |
+| Side effects | Saves `sensitivity.output.*.Rdata` internally | Core returns `sensitivity.output`; writes only when `write = TRUE` |
 | Function size | Mixed sensitivity + ensemble + IO logic | Split into focused helpers (context resolution, compute, optional write) |
 
 Required public inputs:
@@ -94,8 +93,7 @@ Required public inputs:
 - `sensitivity`
 - `outdir`
 - `pfts`
-- `sensitivity.samples`
-- `ensemble.samples`
+- `samples`
 - `manifest`
 
 Primary core return:
@@ -147,7 +145,7 @@ Recommended internal helpers in `modules/uncertainty/R/get.results.R`:
   - Extracts `ensemble`, `modeloutdir`, `sensitivity`, `outdir`, `pfts`.
 - `.resolve_get_results_context(sensitivity, ensemble, variable, start.year, end.year, sa.ensemble.id, ens.ensemble.id)`
   - Resolves variable/year/ensemble defaults deterministically.
-- `.normalize_legacy_samples_payload(sensitivity.samples, ensemble.samples)`
+- `.normalize_legacy_samples_payload(samples)`
   - Fills compatibility fields (`pft.names`, `trait.names`, `sa.run.ids`, `ens.run.ids`) when missing.
 - `.compute_sensitivity_output_for_variable(...)`
   - Runs per-variable/per-PFT read pipeline using explicit inputs.
@@ -177,15 +175,15 @@ runModule.get.results(settings)
 Caller
   -> prepare explicit inputs:
       -> attrs: ensemble, modeloutdir, sensitivity, outdir, pfts
-      -> objects: sensitivity.samples, ensemble.samples, manifest
-  -> runModule.get.results(settings, sensitivity.samples, ensemble.samples, manifest, ...)
+      -> objects: samples, manifest
+  -> runModule.get.results(settings, samples, manifest, write = TRUE, ...)
       -> if missing objects: deprecated fallback loader from settings/files with warning
       -> extract attrs per site
-      -> get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, sensitivity.samples, ensemble.samples, manifest, ...)
+      -> get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, samples, manifest, write = FALSE, ...)
           -> resolve context
           -> read.sa.output(..., manifest = manifest, ...)
           -> return sensitivity.output (no internal load/save)
-      -> optionally write files in wrapper
+      -> optionally write files in wrapper when `write = TRUE`
       -> return list(sensitivity.output=..., files_written=..., metadata=...)
 ```
 
@@ -193,7 +191,7 @@ Caller
 
 Backward-compatible wrapper behavior is retained temporarily in `runModule.get.results`.
 
-- If `sensitivity.samples`, `ensemble.samples`, or `manifest` are missing:
+- If `samples` or `manifest` are missing:
   - Use deprecated compatibility loading path from `settings$outdir`.
   - Emit deprecation warning requiring explicit-object API.
 - If all required objects are passed:
@@ -244,8 +242,7 @@ This migration needs direct unit tests for explicit-input contracts.
 # Preferred explicit-object API
 res <- runModule.get.results(
   settings = settings,
-  sensitivity.samples = sensitivity.samples,
-  ensemble.samples = ensemble.samples,
+  samples = samples,
   manifest = manifest
 )
 

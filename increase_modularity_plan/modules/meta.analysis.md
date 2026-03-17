@@ -200,7 +200,7 @@ TBD
 | Save files | Lower layers could still write logs/model/PDF artifacts through `outdir` | Returns optional `files_written` metadata; artifact generation becomes explicit and optional |
 | Settings-derived inputs | No direct settings-object dependency | No direct settings-object dependency; wrapper supplies explicit analysis inputs only |
 | Flow | Core analysis already ran from explicit `trait_data` and `priors`, but lower layers still wrote artifacts through `outdir` | Remains the core compute function; lower-level artifact generation becomes optional and explicit |
-| Return | In-memory result list | In-memory result list plus optional `files_written` and metadata |
+| Return | In-memory result list | same |
 ### Test Refactor
 
 | Test area | Legacy coverage | Required update |
@@ -228,11 +228,7 @@ meta_analysis_standalone(trait_data, priors, ..., write_artifacts = FALSE, artif
   -> return results + metadata + optional files_written
 ```
 
-### Refactored Dependency References
 
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| `run.meta.analysis.pft` | [meta.analysis.md - Function: run.meta.analysis.pft](#function-runmetaanalysispft) | Call this as the core compute layer and keep workflow-file persistence outside unless explicitly enabled. |
 
 ## Function: p.point.in.prior
 

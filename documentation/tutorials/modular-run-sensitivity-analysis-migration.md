@@ -25,10 +25,10 @@ This created hidden dependencies between steps and reduced testability.
 1. Preferred path: upstream code prepares and passes required settings attributes and required objects:
    - required settings attributes: `sensitivity`, `pfts`, `run`, `outdir`
    - required objects: `samples`, `sensitivity.samples`, `sensitivity.output`
-2. `runModule.run.sensitivity.analysis(settings, samples, sensitivity.samples, sensitivity.output, ...)` handles Settings/MultiSettings orchestration and forwards explicit inputs.
-3. `run.sensitivity.analysis(sensitivity, pfts, run, outdir, samples, sensitivity.samples, sensitivity.output, ...)` performs core computation without loading any files.
+2. `runModule.run.sensitivity.analysis(settings, samples, sensitivity.samples, sensitivity.output, write = TRUE, ...)` handles Settings/MultiSettings orchestration and forwards explicit inputs.
+3. `run.sensitivity.analysis(sensitivity, pfts, run, outdir, samples, sensitivity.samples, sensitivity.output, write = FALSE, ...)` performs core computation without loading any files.
 4. Core computation returns structured outputs (results + metadata).
-5. Wrapper level performs optional file writing/plotting and returns written paths.
+5. Wrapper level performs optional file writing/plotting when `write = TRUE` and returns written paths.
 6. `sensitivity.filename(outdir, pfts, ...)` generates sensitivity paths without receiving full `settings`.
 7. Backward-compatible wrapper path: if required objects are not passed, `runModule.run.sensitivity.analysis` emits deprecation warnings and temporarily creates/loads them internally.
 
@@ -60,10 +60,10 @@ Required extracted/passed inputs per site:
 
 | Aspect | Legacy Pattern | New Pattern |
 |---|---|---|
-| Main API | `run.sensitivity.analysis(settings, ...)` | `run.sensitivity.analysis(sensitivity, pfts, run, outdir, samples, sensitivity.samples, sensitivity.output, ...)` |
+| Main API | `run.sensitivity.analysis(settings, ...)` | `run.sensitivity.analysis(sensitivity, pfts, run, outdir, samples, sensitivity.samples, sensitivity.output, write = FALSE, ...)` |
 | File dependencies | Loads multiple `.Rdata` files internally with full settings | No internal loads in primary path; all required objects passed explicitly |
 | Compatibility path | N/A | Optional deprecated wrapper may call this with internally created objects |
-| Side effects | Saves `sensitivity.results` and plots | Returns results payload; writing handled by wrapper |
+| Side effects | Saves `sensitivity.results` and plots | Returns results payload; writes only when `write = TRUE` |
 | Input minimization | Full settings object | Minimal required settings attrs + required objects |
 
 Required public inputs:
@@ -151,15 +151,15 @@ Caller
   -> prepare explicit inputs:
       -> required attrs: sensitivity, pfts, run, outdir
       -> required objects: samples, sensitivity.samples, sensitivity.output
-  -> runModule.run.sensitivity.analysis(settings, samples, sensitivity.samples, sensitivity.output, ...)
+  -> runModule.run.sensitivity.analysis(settings, samples, sensitivity.samples, sensitivity.output, write = TRUE, ...)
       -> if objects missing: deprecated fallback loader builds them from settings
       -> extract/pass required attrs per site
-      -> run.sensitivity.analysis(sensitivity, pfts, run, outdir, samples, sensitivity.samples, sensitivity.output, ...)
+      -> run.sensitivity.analysis(sensitivity, pfts, run, outdir, samples, sensitivity.samples, sensitivity.output, write = FALSE, ...)
           -> resolve context (variable/year/ensemble)
           -> compute sensitivity/VD (no internal load in core)
           -> sensitivity.filename(outdir, pfts, ...) for output targets
           -> return structured results + metadata + target paths
-      -> optionally write files (results + plots)
+      -> optionally write files (results + plots) when `write = TRUE`
       -> return list(results=..., files_written=..., metadata=...)
 ```
 

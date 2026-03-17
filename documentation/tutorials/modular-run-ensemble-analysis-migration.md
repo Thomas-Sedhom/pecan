@@ -26,11 +26,11 @@ This created hidden dependencies between stages and reduced testability.
    - required settings attributes: `ensemble`, `run`, `outdir`, `modeloutdir`
    - required objects: `ensemble.output`
    - optional required objects for timeseries path: `ensemble.ts`, `ensemble.samples`
-2. `runModule.run.ensemble.analysis(settings, ensemble.output, ensemble.ts = NULL, ensemble.samples = NULL, ...)` handles Settings/MultiSettings orchestration and forwards explicit inputs.
-3. `run.ensemble.analysis(ensemble, run, outdir, modeloutdir, ensemble.output, ensemble.ts = NULL, ...)` performs core computation without internal `load()`.
+2. `runModule.run.ensemble.analysis(settings, ensemble.output, ensemble.ts = NULL, ensemble.samples = NULL, write = TRUE, ...)` handles Settings/MultiSettings orchestration and forwards explicit inputs.
+3. `run.ensemble.analysis(ensemble, run, outdir, modeloutdir, ensemble.output, ensemble.ts = NULL, write = FALSE, ...)` performs core computation without internal `load()`.
 4. Timeseries path uses explicit `ensemble.ts`; optional compatibility path can call a wrapper that constructs it.
 5. Core computation returns structured outputs and file targets.
-6. Wrapper level performs optional file writing and returns written paths.
+6. Wrapper level performs optional file writing when `write = TRUE` and returns written paths.
 7. `ensemble.filename(outdir, ...)` generates paths without receiving full `settings`.
 8. Backward-compatible wrapper path: if required objects are not passed, `runModule.run.ensemble.analysis` emits deprecation warnings and temporarily loads/builds them internally.
 
@@ -62,10 +62,10 @@ Required extracted/passed inputs per site:
 
 | Aspect | Legacy Pattern | New Pattern |
 |---|---|---|
-| Main API | `run.ensemble.analysis(settings, ...)` | `run.ensemble.analysis(ensemble, run, outdir, modeloutdir, ensemble.output, ensemble.ts = NULL, ...)` |
+| Main API | `run.ensemble.analysis(settings, ...)` | `run.ensemble.analysis(ensemble, run, outdir, modeloutdir, ensemble.output, ensemble.ts = NULL, write = FALSE, ...)` |
 | File dependencies | Internal `load()` for `ensemble.output.*.Rdata`; internal `save()` | No internal loads in primary path; return payload + file targets |
 | Timeseries source | Calls `read.ensemble.ts(settings, ...)` | Uses explicit `ensemble.ts` object for primary path |
-| Side effects | Saves PDFs and `ensemble.ts.analysis.*.Rdata` | Returns analysis payload; writing handled by wrapper |
+| Side effects | Saves PDFs and `ensemble.ts.analysis.*.Rdata` | Returns analysis payload; writes only when `write = TRUE` |
 | Input minimization | Full settings object | Minimal required attrs + required objects |
 
 Required public inputs:
@@ -115,8 +115,8 @@ Derived internally (or via defaults):
 
 | Aspect | Legacy Pattern | New Pattern |
 |---|---|---|
-| Main API | `read.ensemble.ts(settings, ensemble.id, variable, ...)` | `read.ensemble.ts(ensemble, run, modeloutdir, outdir, ensemble.samples, ensemble.id, variable, ...)` |
-| File dependencies | Internal `load()` for ensemble samples; internal `save(ensemble.ts, ...)` | No internal loads/saves in primary path |
+| Main API | `read.ensemble.ts(settings, ensemble.id, variable, ...)` | `read.ensemble.ts(ensemble, run, modeloutdir, outdir, ensemble.samples, ensemble.id, variable, write = FALSE, ...)` |
+| File dependencies | Internal `load()` for ensemble samples; internal `save(ensemble.ts, ...)` | No internal loads in primary path; writes only when `write = TRUE` |
 | Output contract | Returns `ensemble.ts` plus side-effect save | Returns `ensemble.ts` + file targets; wrapper writes if requested |
 | Settings usage | Full settings object | Required attrs only |
 
@@ -177,16 +177,16 @@ Caller
       -> required attrs: ensemble, run, outdir, modeloutdir
       -> required object: ensemble.output
       -> optional timeseries objects: ensemble.ts, ensemble.samples
-  -> runModule.run.ensemble.analysis(settings, ensemble.output, ensemble.ts, ensemble.samples, ...)
+  -> runModule.run.ensemble.analysis(settings, ensemble.output, ensemble.ts, ensemble.samples, write = TRUE, ...)
       -> if objects missing: deprecated fallback loader builds/loads them from settings
       -> extract/pass required attrs per site
-      -> run.ensemble.analysis(ensemble, run, outdir, modeloutdir, ensemble.output, ensemble.ts, ...)
+      -> run.ensemble.analysis(ensemble, run, outdir, modeloutdir, ensemble.output, ensemble.ts, write = FALSE, ...)
           -> resolve context (ensemble.id/variable/years)
           -> compute ensemble distribution analysis
           -> optional timeseries analysis using explicit ensemble.ts
           -> ensemble.filename(outdir, ...) for output targets
           -> return structured results + metadata + target paths
-      -> optionally write files (pdf/rdata)
+      -> optionally write files (pdf/rdata) when `write = TRUE`
       -> return list(results=..., files_written=..., metadata=...)
 ```
 

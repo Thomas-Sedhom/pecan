@@ -100,7 +100,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     names(newfile) <- rep("path", length(newfile))
 
     if (length(newfile)==0){
-      newfile <- PEcAn.data.land::BADM_IC_process(settings, dir=outfolder, overwrite=FALSE)
+     <- PEcAn.data.land::BADM_IC_process(settings, dir=outfolder, overwrite=FALSE)
     }
 
     settings$run$inputs[['poolinitcond']]$path <- newfile

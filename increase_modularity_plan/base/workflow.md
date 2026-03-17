@@ -18,39 +18,63 @@ Package path: `base/workflow`
 
 | Aspect | Old | New |
 |---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
+| Parameters | `do_conversions(settings)` | `do_conversions(settings, dbCon = NULL)` |
+| Load files | Loads `pecan.METProcess.xml` when no conversions run | Same behavior, now documented as a compatibility load path |
+| Save files | Writes `pecan.METProcess.xml` when conversions run | Same side effect; remains explicit and documented |
+| Settings-derived inputs | Passed full `settings` into every downstream function | Orchestrates only; passes explicit inputs and optional `dbCon` downstream |
+| Flow | Loop inputs, skip when `input$path` exists and `input$force` is not set, downstream opens DB internally | Same loop/skip logic, but forwards explicit `dbCon` and uses compatibility DB opens only with warnings |
+| Return | Updated `settings` (paths and run inputs) | Updated `settings`; compatibility load may override in-memory settings when no conversions run |
 ### Test Refactor
 
 | Test area | Legacy coverage | Required update |
 |---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
+| Happy path | Conversion tests assumed internal DB opens | Add tests that explicit `dbCon` is passed to `ic_process`, `fia.to.psscss`, `soil_process`, and `met.process` |
+| Edge cases | Skip/force and no-op behavior covered indirectly | Add tests for skip when `input$path` exists and for `pecan.METProcess.xml` load when no conversions run |
+| Side effects / integration points | XML write/load not isolated | Assert `pecan.METProcess.xml` write on conversion and compatibility load on no-op; warn when `dbCon` missing |
 
 ### Call Flow Comparison
 
 Old flow:
 
 ```text
-TBD
+do_conversions(settings)
+  -> loop inputs
+      -> skip if input$path exists and input$force is NULL
+      -> ic_process() opens DB internally
+      -> fia.to.psscss() opens BETY + FIA internally
+      -> soil_process() opens DB internally
+      -> extract_phenology_MODIS() queries DB implicitly when lat/lon missing
+      -> met.process() opens DB internally
+  -> write pecan.METProcess.xml if conversions ran
+  -> else load pecan.METProcess.xml if it exists
 ```
 
 New flow:
 
 ```text
-TBD
+Caller
+  -> optional dbCon <- db.open(...)
+  -> do_conversions(settings, dbCon = dbCon)
+      -> loop inputs
+          -> skip if input$path exists and input$force is NULL
+          -> ic_process(..., dbCon)
+          -> fia.to.psscss(..., dbCon)
+          -> soil_process(..., dbCon)
+          -> extract_phenology_MODIS(site_info = explicit, dbCon)
+          -> met.process(..., dbCon)
+      -> write pecan.METProcess.xml if conversions ran
+      -> else load pecan.METProcess.xml if it exists
+  -> close dbCon if opened by caller
 ```
 
 ### Refactored Dependency References
 
 | Called function | Source of truth | Caller update after dependency refactor |
 |---|---|---|
-| TBD | TBD | TBD |
+| `ic_process` | [data.land.md - Function: ic_process](../modules/data.land.md#function-ic_process) | Pass explicit `dbCon` and only required settings-derived inputs. |
+| `fia.to.psscss` | [data.land.md - Function: fia.to.psscss](../modules/data.land.md#function-fiatopsscss) | Pass explicit BETY `dbCon` instead of opening internally. |
+| `soil_process` | [data.land.md - Function: soil_process](../modules/data.land.md#function-soil_process) | Pass explicit site/model/db inputs plus `dbCon` in the strict path. |
+| `met.process` | [data.atmosphere.md - Function: met.process](../modules/data.atmosphere.md#function-metprocess) | Forward `dbCon` and explicit inputs; avoid internal DB open. |
 
 ## Function: generate_input_design
 

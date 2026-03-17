@@ -172,28 +172,6 @@ Expected core return keys:
 - `files_written`
 - `metadata`
 
-## Helper Functions (New/Internal)
-
-Recommended internal helpers in `modules/meta.analysis/R/run.meta.analysis.R`:
-
-- `.extract_meta_analysis_inputs(settings)`
-  - Extracts required attrs from settings for modular dispatch.
-- `.deprecated_load_meta_analysis_inputs_from_settings(settings)`
-  - Temporary wrapper-only compatibility loader for missing explicit object maps.
-- `.validate_meta_analysis_input_maps(pfts, trait_data_by_pft, prior_distns_by_pft)`
-  - Verifies all requested PFTs have corresponding explicit inputs.
-- `.build_meta_output_targets(outdir)`
-  - Computes standard workflow output targets for one PFT.
-- `.write_meta_analysis_outputs(results, targets)`
-  - Saves workflow outputs and returns `files_written`.
-- `.register_meta_analysis_outputs(files_written, posteriorid, dbfiles, dbcon)`
-  - Copies/registers written outputs into DB storage.
-- `.prepare_meta_jagged_data(...)`
-  - Normalizes and jagifies trait inputs.
-- `.check_meta_input_consistency(...)`
-  - Performs prior/data and prior/posterior consistency checks.
-- `.build_meta_taupriors(...)`
-  - Computes tau prior values from explicit inputs.
 
 ## `runModule.run.meta.analysis` Flow Diagrams
 
@@ -284,9 +262,6 @@ contracts and compatibility behavior.
 4. `modules/meta.analysis/tests/testthat/test-runmodule-meta-analysis.R`
 - `test_runmodule_meta_analysis_uses_explicit_path_when_maps_passed()`
 - `test_runmodule_meta_analysis_deprecated_fallback_when_maps_missing()`
-- `test_runmodule_meta_analysis_emits_deprecation_warning_for_fallback()`
-- `test_runmodule_meta_analysis_multisettings_dispatch_and_deduping()`
-- `test_runmodule_meta_analysis_returns_structured_results_and_file_metadata()`
 
 ### Acceptance criteria for tests
 
@@ -309,15 +284,3 @@ ma_stage <- runModule.run.meta.analysis(
 results_by_pft <- ma_stage$results_by_pft
 files_written_by_pft <- ma_stage$files_written_by_pft
 ```
-
-## Migration Notes
-
-- `runModule.run.meta.analysis()` remains orchestration-focused.
-- `run.meta.analysis()` should not open DB connections in the primary path.
-- `run.meta.analysis.pft()` should not load files in the primary path.
-- `meta_analysis_standalone()` remains the core compute API.
-- Wrapper persistence is kept by default during the migration window because
-  downstream modules still consume `post.distns.Rdata` and
-  `trait.mcmc.Rdata`.
-- Compatibility fallback is temporary and should be removed after the
-  deprecation window.

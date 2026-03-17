@@ -252,7 +252,7 @@ hier.mcmc <- function(settings, gp.stack, nstack = NULL, nmcmc, rng_orig,
     })
     
     # Accept/reject with MH rule
-    ar <- is.accepted(currPost + currHR, newPost + newHR)
+    ar <- is.accepted(currPost + currfHR, newPost + newHR)
     mu_site_curr[ar, ] <- mu_site_new[ar, ]
     musite.accept.count[thissite] <- musite.accept.count[thissite] + ar[thissite]
     

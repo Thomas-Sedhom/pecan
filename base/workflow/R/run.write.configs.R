@@ -26,8 +26,8 @@
 #'    files within this workflow, to avoid confusion.
 #'
 #' @return A list with \code{settings} (updated settings list including
-#'   ensemble IDs) and \code{samples} (canonical samples object used for
-#'   config writing).
+#'   ensemble IDs) and \code{runs_manifest} (data.frame containing the run
+#'   manifest written to disk).
 #' @export
 #'
 #' @author David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze, Akash B V
@@ -370,19 +370,8 @@ run.write.configs <- function(settings, ensemble.size, input_design, write = TRU
   
   PEcAn.logger::logger.info("Run manifest written to ", manifest.file)
 
-  samples_out <- samples
-  if (is.null(samples_out)) {
-    samples_out <- list(
-      trait.samples = trait.samples,
-      sa.samples = sa.samples,
-      ensemble.samples = ensemble.samples,
-      runs.samples = list(),
-      env.samples = list()
-    )
-  }
-
   options(scipen = scipen)
-  return(list(settings = settings, samples = samples_out))
+  return(list(settings = settings, runs_manifest = run_manifest_df))
 }
 
 .validate_runwrite_samples <- function(samples) {

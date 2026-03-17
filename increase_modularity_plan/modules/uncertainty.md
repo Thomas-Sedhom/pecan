@@ -1,38 +1,13 @@
 # uncertainty Refactor Plan
 
-Package path: `modules/uncertainty`
-
-## Package Summary
-
-| Item | Value |
-|---|---|
-| Package | `uncertainty` |
-| Layer | `modules` |
-| Source path | `modules/uncertainty` |
-| Functions detected | `45` |
-
 ## Function Inventory
 
-- [compute_sobol_indices](#function-compute_sobol_indices)
 - [ensemble.filename](#function-ensemblefilename)
-- [ensemble.ts](#function-ensemblets)
-- [filterNA](#function-filterna)
-- [flux.uncertainty](#function-fluxuncertainty)
 - [generate_joint_ensemble_design](#function-generate_joint_ensemble_design)
 - [generate_OAT_SA_design](#function-generate_oat_sa_design)
-- [get.change](#function-getchange)
-- [get.distns](#function-getdistns)
-- [get.ensemble.samples](#function-getensemblesamples)
-- [get.gi.phii](#function-getgiphii)
 - [get.parameter.samples](#function-getparametersamples)
 - [get.results](#function-getresults)
-- [get.sensitivity](#function-getsensitivity)
-- [get.trait.mcmc](#function-gettraitmcmc)
-- [get_ensemble_samples](#function-get_ensemble_samples)
 - [input.ens.gen](#function-inputensgen)
-- [plot_flux_uncertainty](#function-plot_flux_uncertainty)
-- [plot_oechel_flux](#function-plot_oechel_flux)
-- [read.ameriflux.L2](#function-readamerifluxl2)
 - [read.ensemble.output](#function-readensembleoutput)
 - [read.ensemble.ts](#function-readensemblets)
 - [read.sa.output](#function-readsaoutput)
@@ -42,52 +17,8 @@ Package path: `modules/uncertainty`
 - [runModule.run.ensemble.analysis](#function-runmodulerunensembleanalysis)
 - [runModule.run.sensitivity.analysis](#function-runmodulerunsensitivityanalysis)
 - [sensitivity.filename](#function-sensitivityfilename)
-- [spline.ensemble](#function-splineensemble)
-- [tundra.flux.uncertainty](#function-tundrafluxuncertainty)
-- [variance.stats](#function-variancestats)
-- [vd.variance](#function-vdvariance)
 - [write.ensemble.configs](#function-writeensembleconfigs)
 - [write.sa.configs](#function-writesaconfigs)
-
-## Function: compute_sobol_indices
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
 
 ## Function: ensemble.filename
 
@@ -125,134 +56,6 @@ New flow:
 ensemble.filename(outdir, ...)
   -> build output path from explicit outdir and optional context args
 ```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| `run.ensemble.analysis` | [uncertainty.md - Function: run.ensemble.analysis](#function-runensembleanalysis) | Pass `outdir` directly when assembling file targets. |
-| `read.ensemble.ts` | [uncertainty.md - Function: read.ensemble.ts](#function-readensemblets) | Use explicit `outdir` when returning timeseries file targets. |
-
-## Function: ensemble.ts
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
-
-## Function: filterNA
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
-
-## Function: flux.uncertainty
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
-
 ## Function: generate_joint_ensemble_design
 
 ### Refactor Summary
@@ -294,7 +97,7 @@ generate_joint_ensemble_design(run, ensemble, ensemble_size, samples, sobol = FA
 
 | Called function | Source of truth | Caller update after dependency refactor |
 |---|---|---|
-| `get.parameter.samples` | [uncertainty.md - Function: get.parameter.samples](#function-getparametersamples) | Consume the explicit `samples` contract returned upstream instead of generating/loading samples internally. |
+| `get.parameter.samples` | [uncertainty.md - Function: get.parameter.samples](#function-getparametersamples) | Consumed by `generate_input_design` when `design_type = "ensemble"` and `samples` are not provided. |
 | `input.ens.gen` | [uncertainty.md - Function: input.ens.gen](#function-inputensgen) | Pass explicit `run` data instead of full `settings`. |
 
 ## Function: generate_OAT_SA_design
@@ -338,167 +141,7 @@ generate_OAT_SA_design(ensemble, samples)
 
 | Called function | Source of truth | Caller update after dependency refactor |
 |---|---|---|
-| `get.parameter.samples` | [uncertainty.md - Function: get.parameter.samples](#function-getparametersamples) | Use explicit `samples$sa.samples` from upstream preparation. |
-
-## Function: get.change
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
-
-## Function: get.distns
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
-
-## Function: get.ensemble.samples
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
-
-## Function: get.gi.phii
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
+| `get.parameter.samples` | [uncertainty.md - Function: get.parameter.samples](#function-getparametersamples) | Provides `samples$sa.samples` generated inside `generate_input_design` when `design_type = "sensitivity"`. |
 
 ## Function: get.parameter.samples
 
@@ -506,10 +149,10 @@ TBD
 
 | Aspect | Old | New |
 |---|---|---|
-| Parameters | `get.parameter.samples(settings, ...)` | Explicit-object-first inputs: `pfts, outdir, sensitivity, trait.mcmc, distns, ensemble, ensemble.size, ens.sample.method, ...` |
-| Load files | Read from settings plus DB/file fallback inside the function | No strict-path file load; explicit objects are prepared upstream |
-| Save files | Wrote `samples.Rdata` by default | Returns the `samples` object; legacy file write is optional/deprecated |
-| Settings-derived inputs | Used the full `settings` object to resolve workflow state | Requires only the needed values already extracted from settings by the caller |
+| Parameters | `get.parameter.samples(settings, ...)` | Explicit-object-first inputs: `pfts, outdir, sensitivity, trait.mcmc, distns, ensemble, ensemble.size, ens.sample.method, write = FALSE, ...` |
+| Load files | Read from settings plus DB/file fallback inside the function | No strict-path file load; explicit objects are prepared by `generate_input_design` |
+| Save files | Wrote `samples.Rdata` by default | Returns the `samples` object; writes artifacts only when `write = TRUE` (legacy path optional/deprecated) |
+| Settings-derived inputs | Used the full `settings` object to resolve workflow state | Requires only the needed values already extracted inside `generate_input_design` |
 | Flow | Read from settings plus DB/file fallback and wrote `samples.Rdata` by default | Receives prepared objects/attrs as parameters and returns the canonical `samples` object; legacy file write becomes optional/deprecated |
 | Return | Implicit file-backed workflow state | `samples` list with `trait.samples`, `sa.samples`, `ensemble.samples`, `runs.samples`, `env.samples`, and `param.names` |
 ### Test Refactor
@@ -540,25 +183,18 @@ get.parameter.samples(pfts, outdir, sensitivity, trait.mcmc, distns, ensemble, e
   -> return samples in memory
 ```
 
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| `generate_joint_ensemble_design` | [uncertainty.md - Function: generate_joint_ensemble_design](#function-generate_joint_ensemble_design) | Provide the canonical `samples` object to downstream design generation. |
-| `generate_OAT_SA_design` | [uncertainty.md - Function: generate_OAT_SA_design](#function-generate_oat_sa_design) | Provide the canonical `samples` object to downstream sensitivity design generation. |
-
 ## Function: get.results
 
 ### Refactor Summary
 
 | Aspect | Old | New |
 |---|---|---|
-| Parameters | `get.results(settings, ...)` | `get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, sensitivity.samples, ensemble.samples, manifest, ...)` |
-| Load files | Loaded sensitivity samples from disk and relied on `read.sa.output()` to load the manifest internally | No strict-path file load; `sensitivity.samples`, `ensemble.samples`, and `manifest` are passed explicitly |
-| Save files | Saved `sensitivity.output.*.Rdata` internally | Returns `sensitivity.output`; wrapper may add `files_written` and metadata |
+| Parameters | `get.results(settings, ...)` | `get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, samples, manifest, write = FALSE, ...)` |
+| Load files | Loaded sensitivity and ensemble samples and `manifest` from disk | No strict-path file load; `samples` and `manifest` are passed explicitly |
+| Save files | Saved `sensitivity.output.*.Rdata` and `ensemble.output.*.Rdata` internally | Returns `sensitivity.output`; writes files only when `write = TRUE`, otherwise returns file targets/metadata |
 | Settings-derived inputs | Used the full `settings` object directly | Requires only explicit `ensemble`, `modeloutdir`, `sensitivity`, `outdir`, and `pfts` extracted upstream |
-| Flow | Used the full settings object, loaded sensitivity samples from disk, delegated manifest loading to `read.sa.output()`, and saved `sensitivity.output.*.Rdata` internally | Performs sensitivity-output computation from explicit attrs and objects with no internal `load()` in the strict path |
-| Return | Implicit side effects plus in-memory output | Primary core return is `sensitivity.output`; wrapper may add `files_written` and metadata |
+| Flow | Used the full settings object, loaded sensitivity samples from disk, delegated manifest loading to `read.sa.output()`, and saved `sensitivity.output.*.Rdata` internally | Performs sensitivity-output computation from explicit attrs and `samples` with no internal `load()` in the strict path |
+| Return | Implicit side effects plus in-memory output | Primary core return are `sensitivity.output`, `ensemble.output`; wrapper may add `files_written` and metadata |
 ### Test Refactor
 
 | Test area | Legacy coverage | Required update |
@@ -584,7 +220,7 @@ get.results(settings)
 New flow:
 
 ```text
-get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, sensitivity.samples, ensemble.samples, manifest, ...)
+get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, samples, manifest, ...)
   -> resolve context
   -> read.sa.output(..., manifest = manifest, outdir = outdir, ...)
   -> return sensitivity.output
@@ -595,128 +231,11 @@ get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, sensitivity.sample
 
 | Called function | Source of truth | Caller update after dependency refactor |
 |---|---|---|
+| `read.ensemble.output` | [uncertainty.md - Function: read.ensemble.output](#function-readensembleoutput) | Pass explicit `manifest` or `ens.run.ids` to avoid internal manifest reads. |
 | `read.sa.output` | [uncertainty.md - Function: read.sa.output](#function-readsaoutput) | Pass the explicit `manifest` object instead of relying on disk reads. |
+| `ensemble.filename` | [uncertainty.md - Function: ensemble.filename](#function-ensemblefilename) | Use explicit `outdir` when assembling ensemble-output file targets. |
 | `sensitivity.filename` | [uncertainty.md - Function: sensitivity.filename](#function-sensitivityfilename) | Reuse the explicit filename contract already defined for sensitivity analysis. |
 
-## Function: get.sensitivity
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
-
-## Function: get.trait.mcmc
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
-
-## Function: get_ensemble_samples
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
 
 ## Function: input.ens.gen
 
@@ -760,165 +279,48 @@ input.ens.gen(ensemble_size, input, method = "sampling", parent_ids = NULL, run)
 |---|---|---|
 | `generate_joint_ensemble_design` | [uncertainty.md - Function: generate_joint_ensemble_design](#function-generate_joint_ensemble_design) | Provide `run` explicitly when generating input ensembles. |
 
-## Function: plot_flux_uncertainty
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
-
-## Function: plot_oechel_flux
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
-
-## Function: read.ameriflux.L2
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
-
 ## Function: read.ensemble.output
 
 ### Refactor Summary
 
 | Aspect | Old | New |
 |---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
+| Parameters | `read.ensemble.output(ensemble.size, pecandir, outdir, start.year, end.year, variable, ens.run.ids = NULL)` | `read.ensemble.output(ensemble.size, outdir, start.year, end.year, variable, ens.run.ids = NULL, manifest)` |
+| Load files | Read `runs_manifest.csv` internally when `ens.run.ids` is NULL | No strict-path file load; `manifest` is passed explicitly when needed |
+| Save files | No save behavior in this function | No save behavior in the core path |
+| Settings-derived inputs | Relied on `pecandir`/`outdir` provided by settings upstream | Requires only explicit `outdir` and optional `manifest`/`ens.run.ids` |
+| Flow | Loaded manifest from disk (if needed), selected ensemble runs, read outputs, evaluated derivations, and returned per-run means | Uses provided `manifest` (if `ens.run.ids` missing), selects ensemble runs, reads outputs via `read.output`, evaluates derivations, returns per-run means |
+| Return | List of per-run ensemble output means | Same list, but with explicit manifest dependency |
 ### Test Refactor
 
 | Test area | Legacy coverage | Required update |
 |---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
+| Happy path | Covered indirectly via get-results workflow | Add tests that explicit `manifest` or `ens.run.ids` yields the expected per-run output list |
+| Edge cases | Manifest loading and empty-manifest behavior were not isolated | Add tests for missing/empty manifest and missing run IDs in strict path |
+| Side effects / integration points | Internal manifest load hid required input | Assert no internal file read in the strict path |
 
 ### Call Flow Comparison
 
 Old flow:
 
 ```text
-TBD
+read.ensemble.output(..., pecandir, ens.run.ids = NULL)
+  -> if ens.run.ids missing: load runs_manifest.csv from pecandir
+  -> subset ensemble runs
+  -> read.output(...)
+  -> eval derivation + mean
+  -> return list
 ```
 
 New flow:
 
 ```text
-TBD
+read.ensemble.output(..., outdir, ens.run.ids = NULL, manifest)
+  -> if ens.run.ids missing: subset ensemble runs from manifest
+  -> read.output(...)
+  -> eval derivation + mean
+  -> return list
 ```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
 
 ## Function: read.ensemble.ts
 
@@ -926,11 +328,11 @@ TBD
 
 | Aspect | Old | New |
 |---|---|---|
-| Parameters | `read.ensemble.ts(settings, ensemble.id, variable, ...)` | `read.ensemble.ts(ensemble, run, modeloutdir, outdir, ensemble.samples, ensemble.id, variable, ...)` |
+| Parameters | `read.ensemble.ts(settings, ...)` | `read.ensemble.ts(model, ensemble, modeloutdir, ensemble.samples, write = FALSE, ...)` |
 | Load files | Loaded ensemble sample metadata internally from `ensemble.samples.*.Rdata` or `samples.Rdata` | No strict-path file load; `ensemble.samples` is passed explicitly |
-| Save files | Saved `ensemble.ts.*.Rdata` internally | Returns `ensemble.ts` plus file targets / metadata; wrapper writes if needed |
-| Settings-derived inputs | Used the full `settings` object | Requires only explicit `ensemble`, `run`, `modeloutdir`, and `outdir` extracted upstream |
-| Flow | Loaded ensemble sample metadata internally, read model outputs, and saved `ensemble.ts.*.Rdata` internally | Builds and returns `ensemble.ts` from explicit attrs and explicit `ensemble.samples`; wrapper owns optional file writing |
+| Save files | Saved `ensemble.ts.*.Rdata` internally | Returns `ensemble.ts` plus file targets / metadata; writes only when `write = TRUE` |
+| Settings-derived inputs | Used the full `settings` object | Requires only explicit `model`, `ensemble`, `modeloutdir` |
+| Flow | Loaded ensemble sample metadata internally, read model outputs, and saved `ensemble.ts.*.Rdata` internally | Builds and returns `ensemble.ts` from explicit attrs and explicit `ensemble.samples` using `read.output`; wrapper owns optional file writing |
 | Return | `ensemble.ts` plus side-effect save | `ensemble.ts` plus file targets / metadata |
 ### Test Refactor
 
@@ -948,15 +350,17 @@ Old flow:
 read.ensemble.ts(settings, ...)
   -> ensemble.filename(settings, ...)
   -> load ensemble.samples.*.Rdata or samples.Rdata
-  -> read model outputs
+  -> read model outputs via read.output(...)
   -> save ensemble.ts.*.Rdata
 ```
 
 New flow:
 
 ```text
-read.ensemble.ts(ensemble, run, modeloutdir, outdir, ensemble.samples, ensemble.id, variable, ...)
-  -> read model outputs using explicit attrs
+read.ensemble.ts(model, ensemble, modeloutdir, ensemble.samples, ...)
+  -> derive `ensemble.id`/years from explicit `ensemble` when missing
+  -> read model outputs using explicit attrs and read.output(...)
+  -> assemble file targets with ensemble.filename(outdir, ...)
   -> return ensemble.ts + file targets
 ```
 
@@ -1016,12 +420,12 @@ read.sa.output(..., manifest, outdir, ..., per.pft = FALSE)
 
 | Aspect | Old | New |
 |---|---|---|
-| Parameters | `run.ensemble.analysis(settings, ...)` | `run.ensemble.analysis(ensemble, run, outdir, modeloutdir, ensemble.output, ensemble.ts = NULL, ...)` |
-| Load files | Loaded `ensemble.output.*.Rdata` internally and could call `read.ensemble.ts(settings, ...)` | No strict-path file load; `ensemble.output` and optional `ensemble.ts` are passed explicitly |
-| Save files | Saved PDFs and `ensemble.ts.analysis.*.Rdata` internally | Returns analysis payloads and file targets; wrapper owns optional writing |
+| Parameters | `run.ensemble.analysis(settings, ...)` | `run.ensemble.analysis(ensemble, run, outdir, modeloutdir, ensemble.output, ensemble.ts = NULL, write = FALSE, ...)` |
+| Load files | Loaded `ensemble.output.*.Rdata` internally | No strict-path file load; `ensemble.output` is passed explicitly |
+| Save files | Saved PDFs and `ensemble.ts.analysis.*.Rdata` internally | Returns analysis payloads and file targets; writes only when `write = TRUE` |
 | Settings-derived inputs | Used the full `settings` object | Requires only explicit `ensemble`, `run`, `outdir`, and `modeloutdir` extracted upstream |
-| Flow | Resolved filenames, loaded `ensemble.output.*.Rdata`, optionally called `read.ensemble.ts(settings, ...)`, generated plots, and saved analysis artifacts internally | Performs ensemble-analysis computation from explicit attrs and objects; timeseries analysis uses explicit `ensemble.ts`; wrapper owns optional file writing |
-| Return | Mostly side effects | `ensemble_results_by_variable`, `timeseries_results_by_variable`, `plot_payload_by_variable`, `file_targets`, and metadata |
+| Flow | Resolved filenames, loaded `ensemble.output.*.Rdata`, generated plots, and saved analysis artifacts internally | Performs ensemble-analysis computation from explicit attrs and objects; timeseries analysis uses explicit `ensemble.ts`; wrapper owns optional file writing |
+| Return | Mostly side effects | `ensemble_results_by_variable`, and metadata |
 ### Test Refactor
 
 | Test area | Legacy coverage | Required update |
@@ -1068,9 +472,9 @@ run.ensemble.analysis(ensemble, run, outdir, modeloutdir, ensemble.output, ensem
 
 | Aspect | Old | New |
 |---|---|---|
-| Parameters | `run.sensitivity.analysis(settings, ...)` | `run.sensitivity.analysis(sensitivity, pfts, run, outdir, samples, sensitivity.samples, sensitivity.output, ...)` |
+| Parameters | `run.sensitivity.analysis(settings, ...)` | `run.sensitivity.analysis(sensitivity, pfts, run, outdir, samples, sensitivity.samples, sensitivity.output, write = FALSE, ...)` |
 | Load files | Loaded `samples.Rdata`, optional `sensitivity.samples.*.Rdata`, and `sensitivity.output.*.Rdata` internally | No strict-path file load; required objects are passed explicitly |
-| Save files | Saved `sensitivity.results.*.Rdata` and plot PDFs internally | Returns results payloads and metadata; wrapper owns optional writing and plotting |
+| Save files | Saved `sensitivity.results.*.Rdata` and plot PDFs internally | Returns results payloads and metadata; writes only when `write = TRUE` |
 | Settings-derived inputs | Used the full `settings` object | Requires only explicit `sensitivity`, `pfts`, `run`, and `outdir` extracted upstream |
 | Flow | Loaded `samples.Rdata`, optional `sensitivity.samples.*.Rdata`, and `sensitivity.output.*.Rdata` internally, then computed and saved results/plots | Computes sensitivity analysis from explicit attrs and objects with no internal file load in the strict path; wrapper owns optional writing and plotting |
 | Return | Side effects plus internal objects | `sensitivity_results_by_variable`, `plot_payload_by_variable`, and metadata |
@@ -1118,11 +522,11 @@ run.sensitivity.analysis(sensitivity, pfts, run, outdir, samples, sensitivity.sa
 
 | Aspect | Old | New |
 |---|---|---|
-| Parameters | `settings` only | `settings, sensitivity.samples = NULL, ensemble.samples = NULL, manifest = NULL, ...` |
-| Load files | Relied on hidden file coupling for samples and manifest state | No strict-path file load; explicit objects are forwarded per site and fallback loading is isolated in the wrapper |
-| Save files | Wrapper/core saved `sensitivity.output.*.Rdata` through side effects | Returns structured `sensitivity.output`, optional `files_written`, and metadata |
+| Parameters | `settings` only | `settings, samples = NULL, manifest = NULL, write = TRUE, ...` |
+| Load files | Relied on hidden file coupling for samples and manifest state | No strict-path file load; explicit `samples` object and manifest are forwarded per site and fallback loading is isolated in the wrapper |
+| Save files | Wrapper/core saved `sensitivity.output.*.Rdata` through side effects | Returns structured `sensitivity.output`; writes files only when `write = TRUE` |
 | Settings-derived inputs | Passed the full `settings` object into the core stage | Extracts only required settings-derived attrs such as `ensemble`, `modeloutdir`, `sensitivity`, `outdir`, and `pfts` |
-| Flow | Delegated to `get.results(settings)` and relied on hidden file coupling for samples and manifest state | Wrapper extracts only required attrs, forwards explicit objects per site, and owns the deprecated fallback loader when objects are missing |
+| Flow | Delegated to `get.results(settings)` and relied on hidden file coupling for samples and manifest state | Wrapper extracts only required attrs, forwards explicit `samples` and `manifest` per site, and owns the deprecated fallback loader when objects are missing |
 | Return | Implicit side effects | Structured return including `sensitivity.output`, optional `files_written`, and metadata |
 ### Test Refactor
 
@@ -1146,11 +550,11 @@ New flow:
 
 ```text
 Caller
-  -> prepare explicit attrs and objects: sensitivity.samples, ensemble.samples, manifest
-  -> runModule.get.results(settings, sensitivity.samples, ensemble.samples, manifest, ...)
+  -> prepare explicit attrs and objects: samples, manifest
+  -> runModule.get.results(settings, samples, manifest, write = TRUE, ...)
       -> if objects missing: deprecated fallback loader from settings/files with warning
       -> extract attrs per site
-      -> get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, sensitivity.samples, ensemble.samples, manifest, ...)
+      -> get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, samples, manifest, write = FALSE, ...)
       -> optionally write files in wrapper
       -> return list(sensitivity.output = ..., files_written = ..., metadata = ...)
 ```
@@ -1167,9 +571,9 @@ Caller
 
 | Aspect | Old | New |
 |---|---|---|
-| Parameters | Full `settings` plus `...` | `settings, ensemble.output, ensemble.ts = NULL, ensemble.samples = NULL, ...` |
+| Parameters | Full `settings` plus `...` | `settings, ensemble.output, ensemble.ts = NULL, ensemble.samples = NULL, write = TRUE, ...` |
 | Load files | Relied on hidden file loading in the core path when required objects were not passed | No strict-path file load; explicit analysis objects are passed and compatibility loading stays in the wrapper |
-| Save files | Output PDFs and `.Rdata` analysis files were written via side effects | Returns results, optional written paths, and metadata |
+| Save files | Output PDFs and `.Rdata` analysis files were written via side effects | Returns results; writes files only when `write = TRUE` |
 | Settings-derived inputs | Passed the full `settings` object into the core stage | Extracts only required settings-derived attrs such as `ensemble`, `run`, `outdir`, and `modeloutdir` |
 | Flow | Delegated to `run.ensemble.analysis(settings, ...)` and relied on hidden file loading in the core path | Wrapper extracts required attrs, forwards explicit analysis objects, and keeps a deprecated compatibility loader only when required objects are missing |
 | Return | Mostly side effects | Structured return object with results, optional written paths, and metadata |
@@ -1196,10 +600,10 @@ New flow:
 ```text
 Caller
   -> prepare explicit attrs and objects: ensemble.output, optional ensemble.ts, optional ensemble.samples
-  -> runModule.run.ensemble.analysis(settings, ensemble.output, ensemble.ts, ensemble.samples, ...)
+  -> runModule.run.ensemble.analysis(settings, ensemble.output, ensemble.ts, ensemble.samples, write = TRUE, ...)
       -> if objects missing: deprecated fallback loader with warning
       -> extract/pass required attrs per site
-      -> run.ensemble.analysis(ensemble, run, outdir, modeloutdir, ensemble.output, ensemble.ts, ...)
+      -> run.ensemble.analysis(ensemble, run, outdir, modeloutdir, ensemble.output, ensemble.ts, write = FALSE, ...)
       -> optionally write files
       -> return list(results = ..., files_written = ..., metadata = ...)
 ```
@@ -1216,9 +620,9 @@ Caller
 
 | Aspect | Old | New |
 |---|---|---|
-| Parameters | Full `settings` plus `...` | `settings, samples, sensitivity.samples, sensitivity.output, ...` |
+| Parameters | Full `settings` plus `...` | `settings, samples, sensitivity.samples, sensitivity.output, write = TRUE, ...` |
 | Load files | Relied on hidden file-based state handoff in the core path when objects were missing | No strict-path file load; explicit objects are passed and compatibility loading stays in the wrapper |
-| Save files | Sensitivity results and plots were written via side effects | Returns results, optional file path list, and metadata |
+| Save files | Sensitivity results and plots were written via side effects | Returns results; writes files only when `write = TRUE` |
 | Settings-derived inputs | Passed the full `settings` object into the core stage | Extracts only required settings-derived attrs such as `sensitivity`, `pfts`, `run`, and `outdir` |
 | Flow | Delegated to `run.sensitivity.analysis(settings, ...)` and relied on hidden file-based state handoff | Wrapper extracts required attrs, forwards explicit objects per site, and retains only a deprecated compatibility loader when objects are missing |
 | Return | Mostly side effects | Structured return object plus optional file path list |
@@ -1245,10 +649,10 @@ New flow:
 ```text
 Caller
   -> prepare explicit attrs and objects: samples, sensitivity.samples, sensitivity.output
-  -> runModule.run.sensitivity.analysis(settings, samples, sensitivity.samples, sensitivity.output, ...)
+  -> runModule.run.sensitivity.analysis(settings, samples, sensitivity.samples, sensitivity.output, write = TRUE, ...)
       -> if objects missing: deprecated fallback loader with warning
       -> extract/pass required attrs per site
-      -> run.sensitivity.analysis(sensitivity, pfts, run, outdir, samples, sensitivity.samples, sensitivity.output, ...)
+      -> run.sensitivity.analysis(sensitivity, pfts, run, outdir, samples, sensitivity.samples, sensitivity.output, write = FALSE, ...)
       -> optionally write files
       -> return list(results = ..., files_written = ..., metadata = ...)
 ```
@@ -1299,243 +703,94 @@ sensitivity.filename(outdir, pfts, ...)
 ### Refactored Dependency References
 - No dependencies
 
-## Function: spline.ensemble
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
-
-## Function: tundra.flux.uncertainty
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
-
-## Function: variance.stats
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
-
-## Function: vd.variance
-
-### Refactor Summary
-
-| Aspect | Old | New |
-|---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
-### Test Refactor
-
-| Test area | Legacy coverage | Required update |
-|---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
-
-### Call Flow Comparison
-
-Old flow:
-
-```text
-TBD
-```
-
-New flow:
-
-```text
-TBD
-```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
 
 ## Function: write.ensemble.configs
 
+Overview: DB-free core that writes ensemble configs from explicit inputs; any DB-derived IDs/tags must be prepared by the caller when `write.to.db = TRUE`.
+
 ### Refactor Summary
 
 | Aspect | Old | New |
 |---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
+| Parameters | `write.ensemble.configs(input_design, ensemble.size, defaults, ensemble.samples, settings, model, clean = FALSE, write.to.db = TRUE, restart = NULL, rename = FALSE)` | Same name; add `write = TRUE` plus explicit DB-prepared args such as `ensemble_id = NULL`, `run_ids = NULL`, `required_tags = NULL` (required when `write.to.db = TRUE`) |
+| Load files | No file load; may query DB for required tags | No file load; DB queries removed from this function |
+| Save files | Writes config files and README.txt as side effects | Writes files only when `write = TRUE`; otherwise returns run metadata without writing |
+| Settings-derived inputs | Uses `settings` extensively for run/site/model/output paths and input definitions | Still uses `settings` (no decomposition yet) |
+| Flow | Inline DB open/close, required-tag query, and direct SQL inserts inside core logic | Caller prepares DB-derived IDs/tags; function validates explicit DB inputs when `write.to.db = TRUE` and performs no DB access |
+| Return | `list(runs = ..., ensemble.id = ..., samples = ..., manifest = ...)` (invisible) | Same return contract |
 ### Test Refactor
 
 | Test area | Legacy coverage | Required update |
 |---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
+| Happy path | Existing ensemble workflow tests | Ensure tests still pass with explicit DB inputs when `write.to.db = TRUE` |
+| Edge cases | DB-free path and restart logic | Add coverage that missing DB inputs with `write.to.db = TRUE` errors clearly |
+| Side effects / integration points | DB path not isolated | Add coverage that no DB access is attempted inside `write.ensemble.configs` |
 
 ### Call Flow Comparison
 
 Old flow:
 
 ```text
-TBD
+write.ensemble.configs(...)
+  -> (if write.to.db) open DB
+  -> inline DB query for required tags
+  -> inline INSERTs into ensembles/runs/inputs/posteriors
+  -> write configs + README.txt
+  -> close DB
 ```
 
 New flow:
 
 ```text
-TBD
+Caller
+  -> prepare DB-derived ids/tags (ensemble_id, run_ids, required_tags, input links, posterior links)
+  -> write.ensemble.configs(..., ensemble_id = ..., run_ids = ..., required_tags = ...)
+      -> validate explicit DB inputs when write.to.db = TRUE
+      -> write configs + README.txt
 ```
 
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
 
 ## Function: write.sa.configs
 
+Overview: DB-free core that writes sensitivity configs from explicit inputs; any DB-derived IDs must be prepared by the caller when `write.to.db = TRUE`.
+
 ### Refactor Summary
 
 | Aspect | Old | New |
 |---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
+| Parameters | `write.sa.configs(defaults, quantile.samples, settings, model, clean = FALSE, write.to.db = TRUE, input_design = NULL)` | Same name; add `write = TRUE` plus explicit DB-prepared args such as `ensemble_id = NULL`, `run_ids = NULL` (required when `write.to.db = TRUE`) |
+| Load files | No file load; uses settings and in-memory samples | No change; still no internal file load |
+| Save files | Writes config files, README.txt, runs.txt as side effects | Writes files only when `write = TRUE`; otherwise returns run metadata without writing |
+| Settings-derived inputs | Uses `settings` extensively for run/site/model/output paths | Still uses `settings` (no decomposition yet) |
+| Flow | Inline DB open/close and direct SQL inserts inside core logic | Caller prepares DB-derived IDs; function validates explicit DB inputs when `write.to.db = TRUE` and performs no DB access |
+| Return | `list(runs = ..., ensemble.id = ..., manifest = ...)` (invisible) | Same return contract |
 ### Test Refactor
 
 | Test area | Legacy coverage | Required update |
 |---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
+| Happy path | Covered by `test_write_sa_configs.R` and OAT design tests | Ensure tests still pass with explicit DB inputs when `write.to.db = TRUE` |
+| Edge cases | DB-free runs and manifest generation verified | Add coverage that missing DB inputs with `write.to.db = TRUE` errors clearly |
+| Side effects / integration points | DB path not isolated | Add coverage that no DB access is attempted inside `write.sa.configs` |
 
 ### Call Flow Comparison
 
 Old flow:
 
 ```text
-TBD
+write.sa.configs(...)
+  -> (if write.to.db) open DB
+  -> inline INSERTs into ensembles/runs/inputs/posteriors
+  -> write configs + README + runs.txt
+  -> close DB
 ```
 
 New flow:
 
 ```text
-TBD
+Caller
+  -> prepare DB-derived ids (ensemble_id, run_ids, input links, posterior links)
+  -> write.sa.configs(..., ensemble_id = ..., run_ids = ...)
+      -> validate explicit DB inputs when write.to.db = TRUE
+      -> write configs + README + runs.txt
 ```
-
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
 

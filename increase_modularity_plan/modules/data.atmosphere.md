@@ -3484,39 +3484,46 @@ TBD
 
 | Aspect | Old | New |
 |---|---|---|
-| Parameters | TBD | TBD |
-| Load files | TBD | Passed as explicit parameters or not needed |
-| Save files | TBD | Returned explicitly or handled by wrapper |
-| Settings-derived inputs | TBD | Only required settings-derived values are passed |
-| Flow | TBD | TBD |
-| Return | TBD | TBD |
+| Parameters | `met.process(site, input_met, start_date, end_date, model, host, dbparms, dir, ...)` | Same + `dbCon = NULL` |
+| Load files | Opens BETY DB internally and reads registration XML | Uses explicit `dbCon` in strict path; registration XML read remains |
+| Save files | Writes met outputs and registers them in BETY | Same behavior, but via explicit BETY connection |
+| Settings-derived inputs | Relied on implicit DB access for site/format queries | Requires explicit DB connection for queries; other inputs are passed explicitly |
+| Flow | Open DB, read register, resolve stages, download/convert/standardize/modelize met | Same flow; DB access is explicit and forwarded |
+| Return | Updated `input_met` with generated paths | Updated `input_met` with generated paths |
 ### Test Refactor
 
 | Test area | Legacy coverage | Required update |
 |---|---|---|
-| Happy path | TBD | TBD |
-| Edge cases | TBD | TBD |
-| Side effects / integration points | TBD | TBD |
+| Happy path | Internal DB opens were assumed | Add tests that explicit `dbCon` is used for format/site queries and registration |
+| Edge cases | Stage selection and source fallbacks not isolated | Add tests for explicit `dbCon` across stage branches and warning on missing `dbCon` |
+| Side effects / integration points | DB registration and file outputs not separated | Assert no internal DB open in strict path and returned paths are preserved |
 
 ### Call Flow Comparison
 
 Old flow:
 
 ```text
-TBD
+met.process(site, input_met, start_date, end_date, model, host, dbparms, dir, ...)
+  -> open BETY DB
+  -> read.register(...)
+  -> resolve stage via met.process.stage(...)
+  -> download raw, met2cf, standardize, met2model
+  -> register outputs in BETY
+  -> return input_met
 ```
 
 New flow:
 
 ```text
-TBD
+met.process(site, input_met, start_date, end_date, model, host, dbparms, dir, dbCon = NULL, ...)
+  -> use dbCon (compat opens if missing)
+  -> read.register(...)
+  -> resolve stage via met.process.stage(...)
+  -> download raw, met2cf, standardize, met2model
+  -> register outputs in BETY via dbCon
+  -> return input_met
 ```
 
-### Refactored Dependency References
-
-| Called function | Source of truth | Caller update after dependency refactor |
-|---|---|---|
-| TBD | TBD | TBD |
 
 ## Function: met.process.stage
 
