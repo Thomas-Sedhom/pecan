@@ -156,24 +156,24 @@ Caller
 ### Refactor Summary
 
 
-| Aspect                  | Old                                                                              | New                                                                                                 |
-| ----------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Parameters              | `settings, ...` with implicit dependency on `samples.Rdata`                      | `settings, input_design, samples, ...` with explicit `samples` requirement                          |
-| Load files              | Loaded `samples.Rdata` from disk                                                 | No primary-path sample file load; consumes explicit `samples` and `input_design`                    |
-| Save files              | Wrote configs only through side effects                                          | Returns updated settings and explicit `samples`; config writing remains the controlled side effect  |
-| Settings-derived inputs | Used full `settings` together with hidden file-backed sample state               | Uses only the settings-derived values needed for config writing plus explicit design/sample objects |
-| Flow                    | Loaded `samples.Rdata` from disk, then wrote configs using implicit shared state | Writes configs from explicit `input_design` and `samples`; no primary-path `samples.Rdata` load     |
-| Return                  | Updated settings via side effects                                                | `list(settings = updated_settings, samples = samples)`                                              |
+| Aspect                  | Old                                                                              | New                                                                                                                           |
+| ----------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Parameters              | `settings, ...` with implicit dependency on `samples.Rdata`                      | `settings, input_design, samples, ...` with explicit `samples` requirement                                                    |
+| Load files              | Loaded `samples.Rdata` from disk                                                 | No primary-path sample file load; consumes explicit `samples` and `input_design`                                              |
+| Save files              | Wrote configs only through side effects                                          | Writes configs plus `runs_manifest.csv`; returns explicit manifest data rather than returning the `samples` object            |
+| Settings-derived inputs | Used full `settings` together with hidden file-backed sample state               | Uses only the settings-derived values needed for config writing plus explicit design/sample objects                           |
+| Flow                    | Loaded `samples.Rdata` from disk, then wrote configs using implicit shared state | Writes configs from explicit `input_design` and `samples`, builds the run manifest explicitly, and writes `runs_manifest.csv` |
+| Return                  | Updated settings via side effects                                                | `list(settings = updated_settings, runs_manifest = run_manifest_df)`                                                           |
 
 
 ### Test Refactor
 
 
-| Test area                         | Legacy coverage                                            | Required update                                                                                              |
-| --------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Happy path                        | Existing workflow coverage assumed disk-backed samples     | Add tests that `run.write.configs()` succeeds when explicit `samples` are provided                           |
-| Edge cases                        | Missing explicit-object validation was not covered         | Add tests that calling without `samples` follows only the temporary deprecated compatibility path            |
-| Side effects / integration points | Config writing verified without asserting object contracts | Assert config output writing still occurs while `samples` are returned explicitly and not reloaded from disk |
+| Test area                         | Legacy coverage                                            | Required update                                                                                                  |
+| --------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Happy path                        | Existing workflow coverage assumed disk-backed samples     | Add tests that `run.write.configs()` succeeds when explicit `samples` are provided and returns manifest data    |
+| Edge cases                        | Missing explicit-object validation was not covered         | Add tests that calling without `samples` follows only the temporary deprecated compatibility path                |
+| Side effects / integration points | Config writing verified without asserting object contracts | Assert config output writing still occurs, `runs_manifest.csv` is written, and returned manifest metadata matches |
 
 
 ### Call Flow Comparison
@@ -196,7 +196,8 @@ Caller
   -> run.write.configs(settings, input_design = designs, samples = samples, ...)
       -> validate explicit design + samples contract
       -> write configs
-      -> return list(settings = updated_settings, samples = samples)
+      -> write runs_manifest.csv
+      -> return list(settings = updated_settings, runs_manifest = run_manifest_df)
 ```
 
 ### Refactored Dependency References
@@ -294,24 +295,24 @@ Caller
 ### Refactor Summary
 
 
-| Aspect                  | Old                                                                                    | New                                                                                                                                   |
-| ----------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Parameters              | `settings, ...`                                                                        | `settings, input_design = designs, samples = samples, dbCon = dbCon, ...`                                                             |
-| Load files              | Design generation and sample loading could happen implicitly inside the workflow chain | No strict-path file load; shared `samples` and `input_design` are passed explicitly                                                   |
-| Save files              | Configs were written via side effects and sample state persisted in `samples.Rdata`    | Returns updated settings and explicit `samples`; config file writes remain wrapper/core side effects                                  |
-| Settings-derived inputs | Used full workflow settings object for generation and writing steps                    | Uses only required settings-derived values for dispatch while shared design/sample objects are injected                               |
-| Flow                    | Generated designs internally and relied on downstream hidden `samples.Rdata` coupling  | Requires explicit shared `samples` and pre-generated `input_design`, reuses them across sites, and delegates to `run.write.configs()` |
-| Return                  | Updated settings through side effects                                                  | `list(settings = settings_final, samples = samples)`                                                                                  |
+| Aspect                  | Old                                                                                    | New                                                                                                                                              |
+| ----------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Parameters              | `settings, ...`                                                                        | `settings, input_design = design, samples = samples, dbCon = dbCon, write = TRUE, ...`                                                       |
+| Load files              | Design generation and sample loading could happen implicitly inside the workflow chain | No strict-path file load; shared `samples` and one explicit `input_design` are passed in                                                        |
+| Save files              | Configs were written via side effects and sample state persisted in `samples.Rdata`    | Wrapper delegates config writes, preserves `runs_manifest.csv` as the workflow artifact, and returns aggregated manifest metadata               |
+| Settings-derived inputs | Used full workflow settings object for generation and writing steps                    | Uses only required settings-derived values for dispatch while shared design/sample objects are injected                                          |
+| Flow                    | Generated designs internally and relied on downstream hidden `samples.Rdata` coupling  | Accepts one pre-generated design at a time, reuses shared `samples`, delegates to `run.write.configs()`, and combines returned manifest payloads |
+| Return                  | Updated settings through side effects                                                  | `list(settings = settings_final, runs_manifest = combined_runs_manifest)`                                                                        |
 
 
 ### Test Refactor
 
 
-| Test area                         | Legacy coverage                                                | Required update                                                                                           |
-| --------------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Happy path                        | Integration coverage existed through legacy workflow execution | Add tests that explicit `samples` and `input_design` are accepted and reused across `MultiSettings` sites |
-| Edge cases                        | Shared object reuse and validation were not asserted directly  | Add tests for missing `samples` or malformed `input_design` contracts                                     |
-| Side effects / integration points | Config writing behavior not separated from sample generation   | Assert orchestration only: no internal sample generation/load in the strict path                          |
+| Test area                         | Legacy coverage                                                | Required update                                                                                                      |
+| --------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Happy path                        | Integration coverage existed through legacy workflow execution | Add tests that explicit `samples` and one `input_design` are accepted and that manifest payloads are returned       |
+| Edge cases                        | Shared object reuse and validation were not asserted directly  | Add tests for missing `samples`, malformed `input_design`, and per-design invocation behavior                        |
+| Side effects / integration points | Config writing behavior not separated from sample generation   | Assert orchestration only: no internal sample generation/load in the strict path and manifest outputs are combined   |
 
 
 ### Call Flow Comparison
@@ -335,12 +336,13 @@ New flow:
 Caller
   -> dbCon <- db.open(...)
   -> samples <- .prepare_samples(settings, dbCon)
-  -> designs <- generate_input_design(settings, samples, input_design = NULL)
-  -> runModule.run.write.configs(settings, input_design = designs, samples = samples, dbCon = dbCon)
+  -> design_stage <- generate_input_design(settings, samples, input_design = NULL, design_type = "ensemble" | "sensitivity")
+  -> runModule.run.write.configs(settings, input_design = design_stage$design, samples = samples, dbCon = dbCon, write = TRUE)
       -> validate required input_design contract
-      -> if MultiSettings: dispatch over sites with same shared designs/samples
+      -> if MultiSettings: dispatch over sites with the same shared samples and the requested design
       -> call run.write.configs(settings, ..., input_design, samples)
-      -> return list(settings = settings_final, samples = samples)
+      -> collect returned manifest payloads across calls
+      -> return list(settings = settings_final, runs_manifest = combined_runs_manifest)
 ```
 
 ### Refactored Dependency References
