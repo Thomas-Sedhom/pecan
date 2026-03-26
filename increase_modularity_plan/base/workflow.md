@@ -232,7 +232,7 @@ Caller
 | Load files              | Wrapper behavior depended on downstream hidden DB/file loading                                  | No strict-path workflow file load; explicit per-PFT inputs are prepared or passed in                                                                         |
 | Save files              | Workflow files and DB registration happened implicitly downstream                               | Returns structured per-PFT results and file metadata; wrapper-controlled persistence remains explicit                                                        |
 | Settings-derived inputs | Full workflow settings object was passed through implicitly                                     | Extracts only required settings-derived attrs such as `pfts`, `model$type`, `database$dbfiles`, update/write flags, and `trait.names`                        |
-| Flow                    | Delegated to `get.trait.data()` with hidden DB/file behavior and implicit per-PFT orchestration | Wrapper extracts only required attrs, optionally builds `trait_inputs_by_pft`, owns the per-PFT loop, and calls `get.trait.data.pft()` with explicit objects |
+| Flow                    | Delegated to `get.trait.data()` with hidden DB/file behavior and implicit per-PFT orchestration | Wrapper extracts only required attrs, optionally builds `trait_inputs_by_pft` from explicit TRY-derived `trait_data_flat`, owns the per-PFT loop, and calls `get.trait.data.pft()` with explicit objects |
 | Return                  | Updated `settings` only                                                                         | Updated `settings` plus `results_by_pft` and `files_written_by_pft`                                                                 |
 
 
@@ -261,7 +261,7 @@ New flow:
 
 ```text
 Caller
-  -> optional explicit objects: trait_inputs_by_pft, trait_data_flat, dbcon
+  -> optional explicit objects: trait_inputs_by_pft, TRY-derived trait_data_flat, dbcon
   -> runModule.get.trait.data(settings, trait_inputs_by_pft, trait_data_flat, dbcon, ...)
       -> if explicit objects missing: deprecated wrapper-side fallback with warning
       -> extract attrs from settings

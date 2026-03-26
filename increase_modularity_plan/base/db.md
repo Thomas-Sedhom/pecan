@@ -11,10 +11,10 @@
 | Aspect                  | Old                                                                                                                                                            | New                                                                                                                                                 |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Parameters              | `get.trait.data(pfts, modeltype, dbfiles, database, forceupdate, ..., input_file = NULL)`                                                                      | `get.trait.data(pfts, modeltype, trait.names, trait_data_flat = NULL, dbcon = NULL, ...)`                                                           |
-| Load files              | Opened DB internally and optionally read flat trait/prior data from `input_file`                                                                               | No strict-path workflow file load; optional flat data is passed as `trait_data_flat` and query outputs are prepared explicitly                      |
+| Load files              | Opened DB internally and optionally read flat trait/prior data from `input_file`                                                                               | No strict-path workflow file load; optional TRY-derived flat data is passed as `trait_data_flat` and query outputs are prepared explicitly         |
 | Save files              | Delegated persistence to downstream per-PFT logic that wrote workflow artifacts                                                                                | Returns `trait_inputs_by_pft` and metadata; no strict-path file writing                                                                             |
 | Settings-derived inputs | Consumed DB-related settings-derived inputs indirectly through callers                                                                                         | Uses only required values already extracted by the wrapper/caller, such as `pfts`, `modeltype`, `trait.names`, and optional `dbcon`                 |
-| Flow                    | Opened/closed DB internally, optionally read flat files internally, looped over PFTs, and called `get.trait.data.pft()` as part of the same orchestration step | Becomes the preparation step that builds explicit per-PFT inputs and returns them without calling `get.trait.data.pft()` in the strict modular path |
+| Flow                    | Opened/closed DB internally, optionally read flat files internally, looped over PFTs, and called `get.trait.data.pft()` as part of the same orchestration step | Becomes the preparation step that builds explicit per-PFT inputs from TRY-derived trait data in the strict path and returns them without calling `get.trait.data.pft()` |
 | Return                  | List of updated PFTs                                                                                                                                           | `trait_inputs_by_pft` plus metadata                                                                                                                 |
 
 
@@ -45,7 +45,7 @@ New flow:
 
 ```text
 get.trait.data(pfts, modeltype, trait.names, trait_data_flat = NULL, dbcon = NULL, ...)
-  -> build or normalize per-PFT input objects
+  -> build or normalize per-PFT input objects from explicit TRY-derived trait data
   -> return list(trait_inputs_by_pft = ..., metadata = ...)
   -> no per-PFT workflow call in strict path
 ```
