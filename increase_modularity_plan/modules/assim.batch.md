@@ -1107,7 +1107,7 @@ return_multi_site_objects(method, dbCon, write, ensembleidlist)
 
 | Aspect                  | Old                                                      | New                                                                                                                                      |
 | ----------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Parameters              | `runModule.assim.batch(settings)`                        | `runModule.assim.batch(settings, history = NULL, gp.stack = NULL, SS.stack = NULL, dbCon = NULL, write = TRUE, multi_site_objects = NULL |
+| Parameters              | `runModule.assim.batch(settings)`                        | `runModule.assim.batch(settings, history = NULL, gp.stack = NULL, SS.stack = NULL, dbCon = NULL, write = TRUE, multi_site_objects = NULL)` |
 | Load files              | History/emulator objects loaded downstream               | Uses explicit `history`, `gp.stack`, `SS.stack`, and `multi_site_objects` when provided; compatibility loads only when needed            |
 | Save files              | Downstream writes happened implicitly                    | `write` controls file and DB writes; returned `results` always expose artifacts                                                          |
 | Settings-derived inputs | Full `settings` used to derive dispatch and dependencies | Uses required dispatch fields and passes explicit dependencies                                                                           |

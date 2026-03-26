@@ -127,11 +127,11 @@ generate_joint_ensemble_design(run, ensemble, ensemble_size, samples, sobol = FA
 ### Caller References
 
 
-| Caller function          | Location                                          |
-| ------------------------ | ------------------------------------------------- |
-| `.prepare_input_designs` | `base/workflow/R/runModule.run.write.configs.R`   |
-| `sda.enkf.multisite`     | `modules/assim.sequential/R/sda.enkf_MultiSite.R` |
-| `sda.enkf_local`         | `modules/assim.sequential/R/sda.enkf_parallel.R`  |
+| Caller function             | Location                                                                 |
+| --------------------------- | ------------------------------------------------------------------------ |
+| `generate_input_design`     | `increase_modularity_plan/base/workflow.md`                              |
+| `sda.enkf.multisite`        | `modules/assim.sequential/R/sda.enkf_MultiSite.R`                        |
+| `sda.enkf_local`            | `modules/assim.sequential/R/sda.enkf_parallel.R`                         |
 
 
 ## Function: generate_OAT_SA_design
@@ -187,9 +187,9 @@ generate_OAT_SA_design(ensemble, samples)
 ### Caller References
 
 
-| Caller function          | Location                                        |
-| ------------------------ | ----------------------------------------------- |
-| `.prepare_input_designs` | `base/workflow/R/runModule.run.write.configs.R` |
+| Caller function         | Location                                   |
+| ----------------------- | ------------------------------------------ |
+| `generate_input_design` | `increase_modularity_plan/base/workflow.md` |
 
 
 ## Function: get.parameter.samples
@@ -252,24 +252,24 @@ get.parameter.samples(pfts, outdir, sensitivity, trait.mcmc, distns, ensemble, e
 ### Refactor Summary
 
 
-| Aspect                  | Old                                                                                                                                                                      | New                                                                                                                    |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| Parameters              | `get.results(settings, ...)`                                                                                                                                             | `get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, samples, manifest, write = FALSE, ...)`                 |
-| Load files              | Loaded sensitivity and ensemble samples and `manifest` from disk                                                                                                         | No strict-path file load; `samples` and `manifest` are passed explicitly                                               |
-| Save files              | Saved `sensitivity.output.*.Rdata` and `ensemble.output.*.Rdata` internally                                                                                              | Returns `sensitivity.output`; writes files only when `write = TRUE`, otherwise returns file targets/metadata           |
-| Settings-derived inputs | Used the full `settings` object directly                                                                                                                                 | Requires only explicit `ensemble`, `modeloutdir`, `sensitivity`, `outdir`, and `pfts` extracted upstream               |
-| Flow                    | Used the full settings object, loaded sensitivity samples from disk, delegated manifest loading to `read.sa.output()`, and saved `sensitivity.output.*.Rdata` internally | Performs sensitivity-output computation from explicit attrs and `samples` with no internal `load()` in the strict path |
-| Return                  | Implicit side effects plus in-memory output                                                                                                                              | Primary core return are `sensitivity.output`, `ensemble.output`; wrapper may add `files_written` and metadata          |
+| Aspect                  | Old                                                                                                                                                                      | New                                                                                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameters              | `get.results(settings, ...)`                                                                                                                                             | `get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, samples, manifest, write = FALSE, ...)`                                                    |
+| Load files              | Loaded sensitivity or ensemble samples and `manifest` from disk                                                                                                         | No strict-path file load; `samples` and `manifest` are passed explicitly                                                                                                |
+| Save files              | Saved `sensitivity.output.*.Rdata` or `ensemble.output.*.Rdata` internally                                                                                          | Returns `sensitivity.output`or `ensemble.output`, and metadata; writes files only when `write = TRUE`                                                     |
+| Settings-derived inputs | Used the full `settings` object directly                                                                                                                                 | Requires only explicit `ensemble`, `modeloutdir`, `sensitivity`, `outdir`, and `pfts` extracted upstream                                                |
+| Flow                    | Used the full settings object, loaded samples from disk, delegated manifest loading, and saved results internally                                                      | Performs sensitivity or ensemble output computation from explicit attrs, `samples`, and `manifest` with no internal `load()` in the strict path   |
+| Return                  | Implicit side effects plus in-memory output                                                                                                                              | `list(sensitivity.output or ensemble.output, metadata)`                                              |
 
 
 ### Test Refactor
 
 
-| Test area                         | Legacy coverage                                                              | Required update                                                                                     |
-| --------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Happy path                        | Coverage mostly came through larger workflow/integration paths               | Add direct unit tests for explicit required attrs and objects                                       |
-| Edge cases                        | Context resolution and compatibility payload normalization were not isolated | Add tests for variable/year precedence and deprecated fallback loading                              |
-| Side effects / integration points | Internal file loads and manifest dependency were hidden                      | Assert no internal file load in the strict path and explicit returned `sensitivity.output` contract |
+| Test area                         | Legacy coverage                                                              | Required update                                                                                                                   |
+| --------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Happy path                        | Coverage mostly came through larger workflow/integration paths               | Add direct unit tests for explicit required attrs and objects across both sensitivity and ensemble branches                      |
+| Edge cases                        | Context resolution and compatibility payload normalization were not isolated | Add tests for variable/year precedence, branch-specific execution, and deprecated fallback loading                               |
+| Side effects / integration points | Internal file loads and manifest dependency were hidden                      | Assert no internal file load in the strict path and explicit returned `sensitivity.output` / `ensemble.output` contracts         |
 
 
 ### Call Flow Comparison
@@ -278,12 +278,18 @@ Old flow:
 
 ```text
 get.results(settings)
-  -> sensitivity.filename(settings, ...)
-  -> load sensitivity.samples.*.Rdata or samples.Rdata
-  -> read.sa.output(...)
-      -> load runs_manifest.csv internally
-  -> sensitivity.filename(settings, ...)
-  -> save sensitivity.output.*.Rdata
+  -> if sensitivity configured:
+      -> sensitivity.filename(settings, ...)
+      -> load sensitivity.samples.*.Rdata or samples.Rdata
+      -> read.sa.output(...)
+          -> load runs_manifest.csv internally
+      -> save sensitivity.output.*.Rdata
+  -> if ensemble configured:
+      -> ensemble.filename(settings, ...)
+      -> load ensemble.samples.*.Rdata or samples.Rdata
+      -> read.ensemble.output(...)
+          -> load runs_manifest.csv internally when needed
+      -> save ensemble.output.*.Rdata
 ```
 
 New flow:
@@ -291,20 +297,23 @@ New flow:
 ```text
 get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, samples, manifest, ...)
   -> resolve context
-  -> read.sa.output(..., manifest = manifest, outdir = outdir, ...)
-  -> return sensitivity.output
+  -> if sensitivity configured:
+      -> read.sa.output(..., manifest = manifest, outdir = outdir, ...)
+  -> if ensemble configured:
+      -> read.ensemble.output(..., manifest = manifest, outdir = outdir, ...)
+  -> return list(sensitivity.output or ensemble.output , metadata)
   -> wrapper-only file writing if enabled
 ```
 
 ### Refactored Dependency References
 
 
-| Called function        | Source of truth                                                                  | Caller update after dependency refactor                                        |
-| ---------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `read.ensemble.output` | [uncertainty.md - Function: read.ensemble.output](#function-readensembleoutput)  | Pass explicit `manifest` or `ens.run.ids` to avoid internal manifest reads.    |
-| `read.sa.output`       | [uncertainty.md - Function: read.sa.output](#function-readsaoutput)              | Pass the explicit `manifest` object instead of relying on disk reads.          |
-| `ensemble.filename`    | [uncertainty.md - Function: ensemble.filename](#function-ensemblefilename)       | Use explicit `outdir` when assembling ensemble-output file targets.            |
-| `sensitivity.filename` | [uncertainty.md - Function: sensitivity.filename](#function-sensitivityfilename) | Reuse the explicit filename contract already defined for sensitivity analysis. |
+| Called function        | Source of truth                                                                  | Caller update after dependency refactor                                                                 |
+| ---------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `read.ensemble.output` | [uncertainty.md - Function: read.ensemble.output](#function-readensembleoutput)  | Pass explicit `manifest` or `ens.run.ids` in the ensemble branch to avoid internal manifest reads.     |
+| `read.sa.output`       | [uncertainty.md - Function: read.sa.output](#function-readsaoutput)              | Pass the explicit `manifest` object in the sensitivity branch instead of relying on disk reads.        |
+| `ensemble.filename`    | [uncertainty.md - Function: ensemble.filename](#function-ensemblefilename)       | Use explicit `outdir` when assembling ensemble-output file targets.                                     |
+| `sensitivity.filename` | [uncertainty.md - Function: sensitivity.filename](#function-sensitivityfilename) | Reuse the explicit filename contract already defined for sensitivity analysis.                          |
 
 
 ### Caller References
@@ -313,13 +322,6 @@ get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, samples, manifest,
 | Caller function                 | Location                                                        |
 | ------------------------------- | --------------------------------------------------------------- |
 | `runModule.get.results`         | `modules/uncertainty/R/get.results.R`                           |
-| `workflow.R`                    | `web/workflow.R`                                                |
-| `workflow.wcr.assim.R`          | `scripts/workflow.wcr.assim.R`                                  |
-| `EFI_workflow.R`                | `scripts/EFI_workflow.R`                                        |
-| `abbreviated_workflow_SIPNET.R` | `modules/uncertainty/inst/abbreviated_workflow_SIPNET.R`        |
-| `workflow_2.R`                  | `modules/assim.sequential/inst/sda_backup/sserbin/workflow_2.R` |
-| `workflow.R`                    | `modules/assim.sequential/inst/sda_backup/sserbin/workflow.R`   |
-| `run_model.R`                   | `models/rothc/inst/workflow_example/run_model.R`                |
 | `workflow.R`                    | `web/workflow.R`                                                |
 | `workflow.wcr.assim.R`          | `scripts/workflow.wcr.assim.R`                                  |
 | `EFI_workflow.R`                | `scripts/EFI_workflow.R`                                        |
@@ -432,13 +434,20 @@ read.ensemble.output(..., outdir, ens.run.ids = NULL, manifest)
   -> return list
 ```
 
+### Refactored Dependency References
+
+
+| Called function | Source of truth                                                  | Caller update after dependency refactor                                                                                              |
+| --------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `read.output`   | [utils.md - Function: read.output](../base/utils.md#function-readoutput) | Pass explicit `ncfiles` or an explicit run-output directory contract into the reader instead of relying on hidden path discovery. |
+
 ### Caller References
 
 
 | Caller function  | Location                              |
 | ---------------- | ------------------------------------- |
 | `read.output.ed` | `models/ed/scripts/read.output.ed.R`  |
-| `get.results`    | `modules/uncertainty/R/get.results.R` |
+
 
 
 ## Function: read.ensemble.ts
@@ -550,7 +559,9 @@ read.sa.output(..., manifest, outdir, ..., per.pft = FALSE)
 
 ### Refactored Dependency References
 
-- No documented refactored-function dependencies in the strict path.
+| Called function | Source of truth                                                  | Caller update after dependency refactor                                                                                              |
+| --------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `read.output`   | [utils.md - Function: read.output](../base/utils.md#function-readoutput) | Pass explicit `ncfiles` or an explicit run-output directory contract into the reader instead of relying on hidden path discovery. |
 
 ### Caller References
 
@@ -558,8 +569,6 @@ read.sa.output(..., manifest, outdir, ..., per.pft = FALSE)
 | Caller function  | Location                              |
 | ---------------- | ------------------------------------- |
 | `read.output.ed` | `models/ed/scripts/read.output.ed.R`  |
-| `get.results`    | `modules/uncertainty/R/get.results.R` |
-
 
 ## Function: run.ensemble.analysis
 
@@ -637,7 +646,7 @@ run.ensemble.analysis(ensemble, run, outdir, modeloutdir, ensemble.output, ensem
 
 | Aspect                  | Old                                                                                                                                                | New                                                                                                                                                     |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Parameters              | `run.sensitivity.analysis(settings, ...)`                                                                                                          | `run.sensitivity.analysis(sensitivity, pfts, run, outdir, samples, sensitivity.samples, sensitivity.output, write = FALSE, ...)`                        |
+| Parameters              | `run.sensitivity.analysis(settings, ...)`                                                                                                          | `run.sensitivity.analysis(sensitivity, pfts, run, outdir, samples, sensitivity.output, write = FALSE, ...)`                        |
 | Load files              | Loaded `samples.Rdata`, optional `sensitivity.samples.*.Rdata`, and `sensitivity.output.*.Rdata` internally                                        | No strict-path file load; required objects are passed explicitly                                                                                        |
 | Save files              | Saved `sensitivity.results.*.Rdata` and plot PDFs internally                                                                                       | Returns results payloads and metadata; writes only when `write = TRUE`                                                                                  |
 | Settings-derived inputs | Used the full `settings` object                                                                                                                    | Requires only explicit `sensitivity`, `pfts`, `run`, and `outdir` extracted upstream                                                                    |
@@ -663,7 +672,6 @@ Old flow:
 run.sensitivity.analysis(settings, ...)
   -> sensitivity.filename(settings, ...)
   -> load samples.Rdata
-  -> load sensitivity.samples.*.Rdata
   -> load sensitivity.output.*.Rdata
   -> compute sensitivity/VD
   -> save results and plots
@@ -705,21 +713,21 @@ run.sensitivity.analysis(sensitivity, pfts, run, outdir, samples, sensitivity.sa
 | Aspect                  | Old                                                                                                    | New                                                                                                                                                         |
 | ----------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Parameters              | `settings` only                                                                                        | `settings, samples = NULL, manifest = NULL, write = TRUE, ...`                                                                                              |
-| Load files              | Relied on hidden file coupling for samples and manifest state                                          | No strict-path file load; explicit `samples` object and manifest are forwarded per site and fallback loading is isolated in the wrapper                     |
-| Save files              | Wrapper/core saved `sensitivity.output.*.Rdata` through side effects                                   | Returns structured `sensitivity.output`; writes files only when `write = TRUE`                                                                              |
-| Settings-derived inputs | Passed the full `settings` object into the core stage                                                  | Extracts only required settings-derived attrs such as `ensemble`, `modeloutdir`, `sensitivity`, `outdir`, and `pfts`                                        |
+| Load files              | Relied on hidden file coupling for samples and manifest state                                          | No strict-path file load; explicit `samples` object and `manifest` are forwarded per site and fallback loading is isolated in the wrapper                  |
+| Save files              | Wrapper/core saved `sensitivity.output.*.Rdata` and/or `ensemble.output.*.Rdata` through side effects | Returns structured `sensitivity.output` or `ensemble.output`; writes files only when `write = TRUE`                                                       |
+| Settings-derived inputs | Passed the full `settings` object into the core stage                                                  | Extracts only required settings-derived attrs such as `ensemble`, `modeloutdir`, `sensitivity`, `outdir`, and `pfts`                                      |
 | Flow                    | Delegated to `get.results(settings)` and relied on hidden file coupling for samples and manifest state | Wrapper extracts only required attrs, forwards explicit `samples` and `manifest` per site, and owns the deprecated fallback loader when objects are missing |
-| Return                  | Implicit side effects                                                                                  | Structured return including `sensitivity.output`, optional `files_written`, and metadata                                                                    |
+| Return                  | Implicit side effects                                                                                  | Structured return including `sensitivity.output`, `ensemble.output`, and metadata                                                |
 
 
 ### Test Refactor
 
 
-| Test area                         | Legacy coverage                                                     | Required update                                                             |
-| --------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Happy path                        | Existing behavior was exercised mostly through workflow-level paths | Add tests that the explicit object path is used when all objects are passed |
-| Edge cases                        | Compatibility fallback behavior and warnings were not isolated      | Add tests for missing objects triggering fallback and deprecation warnings  |
-| Side effects / integration points | MultiSettings dispatch and returned payloads were not asserted      | Add tests for per-site dispatch and structured return contracts             |
+| Test area                         | Legacy coverage                                                     | Required update                                                                                        |
+| --------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Happy path                        | Existing behavior was exercised mostly through workflow-level paths | Add tests that the explicit object path is used when all required objects are passed for either branch |
+| Edge cases                        | Compatibility fallback behavior and warnings were not isolated      | Add tests for missing objects triggering fallback, branch-specific dispatch, and deprecation warnings  |
+| Side effects / integration points | MultiSettings dispatch and returned payloads were not asserted      | Add tests for per-site dispatch and structured ensemble/sensitivity return contracts                   |
 
 
 ### Call Flow Comparison
@@ -729,7 +737,7 @@ Old flow:
 ```text
 runModule.get.results(settings)
   -> get.results(settings)
-      -> hidden sample and manifest loading
+      -> hidden sample and manifest loading for sensitivity/ensemble branches
 ```
 
 New flow:
@@ -742,7 +750,7 @@ Caller
       -> extract attrs per site
       -> get.results(ensemble, modeloutdir, sensitivity, outdir, pfts, samples, manifest, write = FALSE, ...)
       -> optionally write files in wrapper
-      -> return list(sensitivity.output = ..., files_written = ..., metadata = ...)
+      -> return list(sensitivity.output or ensemble.output , metadata )
 ```
 
 ### Refactored Dependency References
@@ -768,7 +776,7 @@ Caller
 
 | Aspect                  | Old                                                                                                    | New                                                                                                                                                     |
 | ----------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Parameters              | Full `settings` plus `...`                                                                             | `settings, ensemble.output, ensemble.ts = NULL, ensemble.samples = NULL, write = TRUE, ...`                                                             |
+| Parameters              | Full `settings`                                                                   | `settings, ensemble.output, ensemble.ts = NULL, ensemble.samples = NULL, write = TRUE, ...`                                                             |
 | Load files              | Relied on hidden file loading in the core path when required objects were not passed                   | No strict-path file load; explicit analysis objects are passed and compatibility loading stays in the wrapper                                           |
 | Save files              | Output PDFs and `.Rdata` analysis files were written via side effects                                  | Returns results; writes files only when `write = TRUE`                                                                                                  |
 | Settings-derived inputs | Passed the full `settings` object into the core stage                                                  | Extracts only required settings-derived attrs such as `ensemble`, `run`, `outdir`, and `modeloutdir`                                                    |
@@ -837,7 +845,7 @@ Caller
 
 | Aspect                  | Old                                                                                                  | New                                                                                                                                              |
 | ----------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Parameters              | Full `settings` plus `...`                                                                           | `settings, samples, sensitivity.samples, sensitivity.output, write = TRUE, ...`                                                                  |
+| Parameters              | Full `settings`                                                                           | `settings, samples, sensitivity.output, write = TRUE, ...`                                                                  |
 | Load files              | Relied on hidden file-based state handoff in the core path when objects were missing                 | No strict-path file load; explicit objects are passed and compatibility loading stays in the wrapper                                             |
 | Save files              | Sensitivity results and plots were written via side effects                                          | Returns results; writes files only when `write = TRUE`                                                                                           |
 | Settings-derived inputs | Passed the full `settings` object into the core stage                                                | Extracts only required settings-derived attrs such as `sensitivity`, `pfts`, `run`, and `outdir`                                                 |
@@ -941,9 +949,7 @@ sensitivity.filename(outdir, pfts, ...)
   -> build output path from explicit outdir and pfts
 ```
 
-### Refactored Dependency References
 
-- No dependencies
 
 ### Caller References
 
@@ -957,18 +963,18 @@ sensitivity.filename(outdir, pfts, ...)
 
 ## Function: write.ensemble.configs
 
-Overview: DB-free core that writes ensemble configs from explicit inputs; any DB-derived IDs/tags must be prepared by the caller when `write.to.db = TRUE`.
+Overview: Config-writing core that consumes explicit inputs and should reuse caller-owned DB context when `write.to.db = TRUE`, instead of opening its own connection internally.
 
 ### Refactor Summary
 
 
 | Aspect                  | Old                                                                                                                                                                   | New                                                                                                                                                                      |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Parameters              | `write.ensemble.configs(input_design, ensemble.size, defaults, ensemble.samples, settings, model, clean = FALSE, write.to.db = TRUE, restart = NULL, rename = FALSE)` | Same name; add `write = TRUE` plus explicit DB-prepared args such as `ensemble_id = NULL`, `run_ids = NULL`, `required_tags = NULL` (required when `write.to.db = TRUE`) |
+| Parameters              | `write.ensemble.configs(input_design, ensemble.size, defaults, ensemble.samples, settings, model, clean = FALSE, write.to.db = TRUE, restart = NULL, rename = FALSE)` | Same name; add `write = TRUE`, `dbCon = NULL`, plus explicit DB-prepared args such as `ensemble_id = NULL`, `run_ids = NULL`, `required_tags = NULL` (required when `write.to.db = TRUE`) |
 | Load files              | No file load; may query DB for required tags                                                                                                                          | No file load; DB queries removed from this function                                                                                                                      |
 | Save files              | Writes config files and README.txt as side effects                                                                                                                    | Writes files only when `write = TRUE`; otherwise returns run metadata without writing                                                                                    |
 | Settings-derived inputs | Uses `settings` extensively for run/site/model/output paths and input definitions                                                                                     | Still uses `settings` (no decomposition yet)                                                                                                                             |
-| Flow                    | Inline DB open/close, required-tag query, and direct SQL inserts inside core logic                                                                                    | Caller prepares DB-derived IDs/tags; function validates explicit DB inputs when `write.to.db = TRUE` and performs no DB access                                           |
+| Flow                    | Inline DB open/close, required-tag query, and direct SQL inserts inside core logic                                                                                    | Caller prepares DB-derived IDs/tags or passes a shared `dbCon`; function reuses caller-owned DB context in the strict path instead of opening internally                 |
 | Return                  | `list(runs = ..., ensemble.id = ..., samples = ..., manifest = ...)` (invisible)                                                                                      | Same return contract                                                                                                                                                     |
 
 
@@ -999,9 +1005,9 @@ New flow:
 
 ```text
 Caller
-  -> prepare DB-derived ids/tags (ensemble_id, run_ids, required_tags, input links, posterior links)
-  -> write.ensemble.configs(..., ensemble_id = ..., run_ids = ..., required_tags = ...)
-      -> validate explicit DB inputs when write.to.db = TRUE
+  -> prepare DB-derived ids/tags (ensemble_id, run_ids, required_tags, input links, posterior links) or open dbCon once upstream
+  -> write.ensemble.configs(..., ensemble_id = ..., run_ids = ..., required_tags = ..., dbCon = dbCon)
+      -> validate explicit DB inputs or reuse caller-owned dbCon when write.to.db = TRUE
       -> write configs + README.txt
 ```
 
@@ -1019,18 +1025,18 @@ Caller
 
 ## Function: write.sa.configs
 
-Overview: DB-free core that writes sensitivity configs from explicit inputs; any DB-derived IDs must be prepared by the caller when `write.to.db = TRUE`.
+Overview: Config-writing core that consumes explicit inputs and should reuse caller-owned DB context when `write.to.db = TRUE`, instead of opening its own connection internally.
 
 ### Refactor Summary
 
 
 | Aspect                  | Old                                                                                                                     | New                                                                                                                                              |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Parameters              | `write.sa.configs(defaults, quantile.samples, settings, model, clean = FALSE, write.to.db = TRUE, input_design = NULL)` | Same name; add `write = TRUE` plus explicit DB-prepared args such as `ensemble_id = NULL`, `run_ids = NULL` (required when `write.to.db = TRUE`) |
+| Parameters              | `write.sa.configs(defaults, quantile.samples, settings, model, clean = FALSE, write.to.db = TRUE, input_design = NULL)` | Same name; add `write = TRUE`, `dbCon = NULL`, plus explicit DB-prepared args such as `ensemble_id = NULL`, `run_ids = NULL` (required when `write.to.db = TRUE`) |
 | Load files              | No file load; uses settings and in-memory samples                                                                       | No change; still no internal file load                                                                                                           |
 | Save files              | Writes config files, README.txt, runs.txt as side effects                                                               | Writes files only when `write = TRUE`; otherwise returns run metadata without writing                                                            |
 | Settings-derived inputs | Uses `settings` extensively for run/site/model/output paths                                                             | Still uses `settings` (no decomposition yet)                                                                                                     |
-| Flow                    | Inline DB open/close and direct SQL inserts inside core logic                                                           | Caller prepares DB-derived IDs; function validates explicit DB inputs when `write.to.db = TRUE` and performs no DB access                        |
+| Flow                    | Inline DB open/close and direct SQL inserts inside core logic                                                           | Caller prepares DB-derived IDs or passes a shared `dbCon`; function reuses caller-owned DB context in the strict path instead of opening internally |
 | Return                  | `list(runs = ..., ensemble.id = ..., manifest = ...)` (invisible)                                                       | Same return contract                                                                                                                             |
 
 
@@ -1060,9 +1066,9 @@ New flow:
 
 ```text
 Caller
-  -> prepare DB-derived ids (ensemble_id, run_ids, input links, posterior links)
-  -> write.sa.configs(..., ensemble_id = ..., run_ids = ...)
-      -> validate explicit DB inputs when write.to.db = TRUE
+  -> prepare DB-derived ids (ensemble_id, run_ids, input links, posterior links) or open dbCon once upstream
+  -> write.sa.configs(..., ensemble_id = ..., run_ids = ..., dbCon = dbCon)
+      -> validate explicit DB inputs or reuse caller-owned dbCon when write.to.db = TRUE
       -> write configs + README + runs.txt
 ```
 

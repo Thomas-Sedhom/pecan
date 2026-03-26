@@ -2,7 +2,7 @@
 
 This directory holds the actively documented modularity/refactor plans that remain after placeholder-only sections were removed. It is no longer a full package-by-package scaffold for every PEcAn package; it is a focused set of plan files for the functions that already have real refactor notes written down.
 
-At the moment, the folder contains `7` active plan files and `52` documented function refactor sections across `base` and `modules`.
+At the moment, the folder contains `8` active plan files and `53` documented function refactor sections across `base` and `modules`.
 
 ## Overview
 
@@ -26,6 +26,7 @@ Together, these sections capture:
 ## Layout
 
 - `base/db.md`: refactor plans for documented database/trait workflow functions
+- `base/utils.md`: refactor plan for the documented shared output-reading utility
 - `base/workflow.md`: refactor plans for documented workflow orchestration functions
 - `modules/assim.batch.md`: refactor plans for documented batch assimilation functions
 - `modules/data.atmosphere.md`: refactor plan for the documented atmospheric data-processing function

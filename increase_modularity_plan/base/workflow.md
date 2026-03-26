@@ -111,7 +111,7 @@ Caller
 | Save files              | New Function | Returns design objects in memory                                                                                                                                      |
 | Settings-derived inputs | New Function | Uses only required settings-derived values for `run`, `ensemble`, and `sensitivity` normalization                                                                     |
 | Flow                    | New Function | Dedicated pre-write step that validates `Settings` or `MultiSettings`, normalizes optional overrides, and builds ensemble/sensitivity designs from explicit `samples` |
-| Return                  | New Function | `list(ensemble = ..., sensitivity = ...)`                                                                                                                             |
+| Return                  | New Function | `list(expected_design, samples)`                                                                                                                             |
 
 
 ### Test Refactor
@@ -119,9 +119,9 @@ Caller
 
 | Test area                         | Legacy coverage | Required update                                                                                                                 |
 | --------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Happy path                        | New Function    | Add direct tests that `generate_input_design()` returns normalized `ensemble` and `sensitivity` designs from explicit `samples` |
-| Edge cases                        | New Function    | Add tests for missing `samples`, `Settings` vs `MultiSettings`, and normalized list vs data.frame `input_design` overrides      |
-| Side effects / integration points | New Function    | Assert no implicit sampling or file access occurs in this function and that shared `samples` are reused across sites            |
+| Happy path                        | New Function    | Add direct tests that `generate_input_design()` returns normalized `ensemble` or `sensitivity` design from explicit `samples` |
+| Edge cases                        | New Function    | Add tests for missing `samples`
+| Side effects / integration points | New Function    | Assert no implicit sampling or file access occurs in this function          |
 
 
 ### Call Flow Comparison
@@ -135,7 +135,7 @@ Caller
       -> .prepare_input_designs(run, ensemble, sensitivity, samples, input_design)
           -> generate_joint_ensemble_design(run, ensemble, ensemble_size, samples, sobol = FALSE)
           -> generate_OAT_SA_design(ensemble, samples)
-      -> return list(ensemble = ..., sensitivity = ...)
+      -> return list(expected_design, samples)
 ```
 
 ### Refactored Dependency References
@@ -158,11 +158,11 @@ Caller
 
 | Aspect                  | Old                                                                              | New                                                                                                                           |
 | ----------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Parameters              | `settings, ...` with implicit dependency on `samples.Rdata`                      | `settings, input_design, samples, ...` with explicit `samples` requirement                                                    |
+| Parameters              | `settings, ...` with implicit dependency on `samples.Rdata`                      | `settings, input_design, samples, dbCon = NULL, ...` with explicit `samples` requirement and caller-owned DB connection       |
 | Load files              | Loaded `samples.Rdata` from disk                                                 | No primary-path sample file load; consumes explicit `samples` and `input_design`                                              |
-| Save files              | Wrote configs only through side effects                                          | Writes configs plus `runs_manifest.csv`; returns explicit manifest data rather than returning the `samples` object            |
+| Save files              | Wrote configs only through side effects                                          | Writes configs plus `runs_manifest.csv`; returns explicit manifest data            |
 | Settings-derived inputs | Used full `settings` together with hidden file-backed sample state               | Uses only the settings-derived values needed for config writing plus explicit design/sample objects                           |
-| Flow                    | Loaded `samples.Rdata` from disk, then wrote configs using implicit shared state | Writes configs from explicit `input_design` and `samples`, builds the run manifest explicitly, and writes `runs_manifest.csv` |
+| Flow                    | Loaded `samples.Rdata` from disk, then wrote configs using implicit shared state and downstream internal DB opens | Writes configs from explicit `input_design` and `samples`, forwards caller-owned `dbCon` downstream, builds the run manifest explicitly, and writes `runs_manifest.csv` |
 | Return                  | Updated settings via side effects                                                | `list(settings = updated_settings, runs_manifest = run_manifest_df)`                                                           |
 
 
@@ -184,6 +184,7 @@ Old flow:
 runModule.run.write.configs(settings)
   -> run.write.configs(settings, ...)
       -> load samples.Rdata
+      -> write.sa.configs()/write.ensemble.configs() open DB internally when needed
       -> write configs
 ```
 
@@ -193,8 +194,9 @@ New flow:
 Caller
   -> samples <- .prepare_samples(settings, dbCon)
   -> designs <- generate_input_design(settings, samples, input_design = NULL)
-  -> run.write.configs(settings, input_design = designs, samples = samples, ...)
+  -> run.write.configs(settings, input_design = designs, samples = samples, dbCon = dbCon, ...)
       -> validate explicit design + samples contract
+      -> forward caller-owned dbCon to write.sa.configs()/write.ensemble.configs()
       -> write configs
       -> write runs_manifest.csv
       -> return list(settings = updated_settings, runs_manifest = run_manifest_df)
@@ -202,7 +204,10 @@ Caller
 
 ### Refactored Dependency References
 
-- No documented refactored-function dependencies in the strict path.
+| Refactored dependency | Location                                                                                 | Caller update after dependency refactor                                                                                   |
+| --------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `write.sa.configs`    | [uncertainty.md - Function: write.sa.configs](../modules/uncertainty.md#function-writesaconfigs) | Pass explicit SA design/sample inputs and shared `dbCon`, and collect returned manifest metadata rather than relying on hidden workflow state |
+| `write.ensemble.configs` | [uncertainty.md - Function: write.ensemble.configs](../modules/uncertainty.md#function-writeensembleconfigs) | Pass explicit ensemble design/sample inputs and shared `dbCon`, and collect returned manifest metadata rather than relying on hidden workflow state |
 
 ### Caller References
 
@@ -228,7 +233,7 @@ Caller
 | Save files              | Workflow files and DB registration happened implicitly downstream                               | Returns structured per-PFT results and file metadata; wrapper-controlled persistence remains explicit                                                        |
 | Settings-derived inputs | Full workflow settings object was passed through implicitly                                     | Extracts only required settings-derived attrs such as `pfts`, `model$type`, `database$dbfiles`, update/write flags, and `trait.names`                        |
 | Flow                    | Delegated to `get.trait.data()` with hidden DB/file behavior and implicit per-PFT orchestration | Wrapper extracts only required attrs, optionally builds `trait_inputs_by_pft`, owns the per-PFT loop, and calls `get.trait.data.pft()` with explicit objects |
-| Return                  | Updated `settings` only                                                                         | Updated `settings` plus `results_by_pft`, `files_written_by_pft`, and metadata                                                                               |
+| Return                  | Updated `settings` only                                                                         | Updated `settings` plus `results_by_pft` and `files_written_by_pft`                                                                 |
 
 
 ### Test Refactor
@@ -351,6 +356,7 @@ Caller
 | Called function     | Source of truth                                                        | Caller update after dependency refactor                                       |
 | ------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | `run.write.configs` | [workflow.md - Function: run.write.configs](#function-runwriteconfigs) | Delegate only config writing once explicit designs and samples are available. |
+| `generate_input_design` | [workflow.md - Function: generate_input_design](#function-generate_input_design) | Generate input design and return (Design, samples) |
 
 
 ### Caller References
@@ -358,7 +364,6 @@ Caller
 
 | Caller function                    | Location                                                              |
 | ---------------------------------- | --------------------------------------------------------------------- |
-| `runModule.run.write.configs`      | `base/workflow/R/runModule.run.write.configs.R`                       |
 | `workflow.R`                       | `web/workflow.R`                                                      |
 | `EFI_workflow.R`                   | `scripts/EFI_workflow.R`                                              |
 | `workflow.wcr.assim.R`             | `scripts/workflow.wcr.assim.R`                                        |
@@ -500,9 +505,6 @@ start_model_runs(runs, rundir, modeloutdir, host, model_type, dbCon, ...)
   -> return execution metadata + files_written + files_synced + db_events
 ```
 
-### Refactored Dependency References
-
-- No documented refactored-function dependencies in this plan set.
 
 ### Caller References
 
